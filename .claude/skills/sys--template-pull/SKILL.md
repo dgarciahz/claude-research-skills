@@ -1,10 +1,10 @@
-# Skill: Template Sync
+# Skill: Template Pull
 
 Actualiza los skills y agents del proyecto actual desde el template `claude-starter`, sin tocar la configuración local (`.mcp.json`, `settings.local.json`).
 
 ## Trigger
 
-Usar cuando el usuario invoque `/sys--template-sync` o pida actualizar/sincronizar skills desde el template.
+Usar cuando el usuario invoque `/sys--template-pull` o pida actualizar/sincronizar skills desde el template.
 
 ## Configuración
 
@@ -50,7 +50,7 @@ git checkout template/main -- .claude/agents/
 
 ### 5. Comparar MCP servers del catálogo con el proyecto
 
-Lee el archivo `.claude/skills/sys--template-update/MCP_SERVERS.md` recién descargado y compáralo con el `.mcp.json` del proyecto (si existe).
+Lee el archivo `.claude/skills/sys--template-push/MCP_SERVERS.md` recién descargado y compáralo con el `.mcp.json` del proyecto (si existe).
 
 Si hay servers en el catálogo que **no están en el proyecto**, muéstralos al usuario:
 > "El catálogo del template tiene estos servers que no tienes configurados: [lista]. ¿Quieres añadir alguno?"

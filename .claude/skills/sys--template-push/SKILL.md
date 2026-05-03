@@ -1,10 +1,10 @@
-# Skill: Template Update
+# Skill: Template Push
 
 Sincroniza los skills y agents del proyecto actual al repositorio template `claude-starter`, para que los próximos proyectos partan de la versión más reciente.
 
 ## Trigger
 
-Usar cuando el usuario invoque `/sys--template-update` o pida sincronizar / propagar cambios al template.
+Usar cuando el usuario invoque `/sys--template-push` o pida sincronizar / propagar cambios al template.
 
 ## Configuración
 
@@ -28,10 +28,11 @@ Solo se sincronizan estos skills (lista explícita). El usuario puede tener skil
 - `per--history`
 - `per--init`
 - `per--session-close`
+- `per--learn`
 - `sys--context-report`
 - `sys--template-init`
-- `sys--template-sync`
-- `sys--template-update`
+- `sys--template-pull`
+- `sys--template-push`
 
 Si el usuario pide añadir o quitar un skill de esta lista, actualiza el SKILL.md antes de continuar.
 
@@ -74,7 +75,7 @@ No copies agents que no estén en la lista — pueden ser agents específicos de
 
 ### 5. Actualizar MCP_SERVERS.md (catálogo del template)
 
-Lee el `.mcp.json` del proyecto actual y compáralo con el catálogo `.claude/skills/sys--template-update/MCP_SERVERS.md`.
+Lee el `.mcp.json` del proyecto actual y compáralo con el catálogo `.claude/skills/sys--template-push/MCP_SERVERS.md`.
 
 Si hay servers en el proyecto que **no están en el catálogo**, pregunta al usuario:
 > "Estos servers están en tu proyecto pero no en el catálogo del template: [lista]. ¿Los añado?"
@@ -86,7 +87,7 @@ Para cada server que el usuario apruebe, añade una entrada al `MCP_SERVERS.md` 
 - Descripción de uso
 
 Una vez actualizado el `MCP_SERVERS.md`, cópialo al template:
-`C:\david\development\claude-templates\claude-starter\.claude\skills\sys--template-update\MCP_SERVERS.md`
+`C:\david\development\claude-templates\claude-starter\.claude\skills\sys--template-push\MCP_SERVERS.md`
 
 No copies `.mcp.json` ni `settings.local.json` — contienen rutas absolutas y credenciales específicas de cada máquina.
 
