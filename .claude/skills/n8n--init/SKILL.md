@@ -70,10 +70,42 @@ Verifica si existe `$CLAUDE_PERSONAL_DIR/n8n.md`.
 - Si existe: no sobreescribir, pasar al paso 7.
 - Si no existe: crear el fichero con la plantilla de contenido agnóstico que figura al final de este skill (sección "Plantilla n8n.md").
 
-#### 7. Verificar N8N_URL en settings.local.json
+#### 7. Configurar conexión con n8n
+
+**7a. URL de instancia (`settings.local.json`)**
 
 Comprueba si el bloque `env` de `.claude/settings.local.json` contiene la clave `N8N_URL`.
-- Si no existe: preguntar al usuario la URL base de su instancia n8n (ej. `https://mi-instancia.duckdns.org`) y añadir `N8N_URL` y `N8N_API_URL` (URL + `/api/v1`) al bloque `env`.
+- Si no existe: pregunta al usuario la URL base de su instancia n8n (ej. `https://mi-instancia.duckdns.org`)
+- Añade `N8N_URL` y `N8N_API_URL` (URL + `/api/v1`) al bloque `env` de `settings.local.json` sin tocar otras claves.
+
+**7b. MCP server `n8n-mcp` (`.mcp.json`)**
+
+Lee `.mcp.json`. Pueden darse tres casos:
+
+1. **`n8n-mcp` no existe**: añade la entrada completa con placeholders y pide al usuario la API key para sustituirla:
+   ```json
+   "n8n-mcp": {
+     "command": "<ruta npx según SO>",
+     "args": ["-y", "n8n-mcp"],
+     "env": {
+       "MCP_MODE": "stdio",
+       "N8N_API_URL": "<N8N_API_URL del paso 7a>",
+       "N8N_API_KEY": "<pedir al usuario>",
+       "LOG_LEVEL": "error",
+       "DISABLE_CONSOLE_OUTPUT": "true"
+     }
+   }
+   ```
+
+2. **`n8n-mcp` existe con placeholder** (`N8N_API_KEY` contiene texto como `TU_API_KEY` o está vacío): pide la API key al usuario y sustitúyela. Actualiza también `N8N_API_URL` con el valor del paso 7a si es un placeholder.
+
+3. **`n8n-mcp` existe con valores reales**: no modificar nada.
+
+Para detectar la ruta de npx en Windows: comprueba `C:\Program Files\nodejs\npx.cmd`; en macOS/Linux usa `npx`.
+
+**7c. Habilitar el server en `settings.local.json`**
+
+Comprueba si `n8n-mcp` está en `enabledMcpjsonServers`. Si no está, añádelo.
 
 #### 8. Añadir bloque N8N a CLAUDE.md si no existe
 
@@ -96,7 +128,8 @@ Sustituye `<CLAUDE_PERSONAL_DIR>` por la ruta real (en Windows, usa backslashes)
 Informa al usuario de:
 - Qué skills se instalaron (o si ya estaban al día)
 - Si `n8n.md` se creó o ya existía
-- Si `N8N_URL` se añadió a `settings.local.json` o ya estaba configurada
+- Si `N8N_URL` / `N8N_API_URL` se añadieron a `settings.local.json` o ya estaban configuradas
+- Qué se hizo con `n8n-mcp` en `.mcp.json` (creado, completado con API key real, o ya estaba configurado)
 - Si el bloque `<!-- N8N:START/END -->` se añadió a `CLAUDE.md` o ya estaba presente
 - Recordatorio: reiniciar Claude Code para que los cambios sean detectados
 
