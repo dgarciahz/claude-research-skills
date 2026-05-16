@@ -12,7 +12,19 @@ Sigue estos pasos en orden:
 
 ### 1. Leer CLAUDE_PERSONAL_DIR
 
-Obtén la ruta desde la variable de entorno `CLAUDE_PERSONAL_DIR`. Si no está definida, informa al usuario y detente — debe estar configurada en `.claude/settings.local.json`.
+Obtén la ruta desde la variable de entorno `CLAUDE_PERSONAL_DIR`.
+
+Si no está definida, pide la ruta al usuario:
+> "¿Cuál es la ruta de tu directorio de personalización? (ej. `C:\Users\tu-usuario\claude-personal` o `~/claude-personal`)"
+
+Con la ruta proporcionada:
+1. Escríbela en el bloque `env` de `.claude/settings.local.json` (créalo si no existe):
+   ```json
+   { "env": { "CLAUDE_PERSONAL_DIR": "<ruta>" } }
+   ```
+   Si el archivo ya existe, añade solo la clave `CLAUDE_PERSONAL_DIR` sin tocar las demás claves.
+2. Informa al usuario: "Reinicia Claude Code al terminar para que la variable quede disponible en el entorno."
+3. Continúa usando la ruta proporcionada para el resto de los pasos de este skill.
 
 ### 2. Crear archivos base (solo si no existen)
 
