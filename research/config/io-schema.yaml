@@ -1,0 +1,128 @@
+version: "1.0"
+
+# Contrato de entrada al framework
+input:
+  project_name:
+    type: string
+    required: true
+    description: Nombre corto del proyecto (usado en el nombre del fichero de resultado)
+  description:
+    type: string
+    required: true
+    description: >
+      Descripción del proyecto a investigar. Puede ser breve (problema + solución + público)
+      o un texto extenso (documento de propuesta completo). Si es muy largo, el agente de
+      análisis extrae un resumen estructurado antes de lanzar el research.
+  document_path:
+    type: string
+    required: false
+    description: >
+      Ruta opcional a un fichero con la propuesta completa (alternativa o complemento
+      a description). El orquestador lee el fichero y lo pasa al agente de análisis.
+  questions:
+    type: array
+    required: false
+    description: Preguntas específicas que el usuario quiere que la investigación responda
+
+# Contrato de salida del agente de análisis previo
+analysis_output:
+  agent_id:
+    type: string
+    const: "analysis"
+  status:
+    type: string
+    enum: [completed, needs_more_info]
+    description: >
+      "completed" si la descripción tiene suficiente sustancia para extraer estructura.
+      "needs_more_info" si la descripción es tan vaga que no permite formular hipótesis.
+  scientific_basis:
+    type: string
+    description: Fundamento científico/tecnológico subyacente de la propuesta
+  differentiators:
+    type: array
+    description: Aspectos diferenciales identificados con hipótesis verificables
+    items:
+      aspect: string
+      hypothesis: string
+  use_cases:
+    type: array
+    description: Casos de uso identificados con su usuario objetivo
+    items:
+      use_case: string
+      target_user: string
+  research_angles:
+    type: array
+    description: Preguntas de investigación específicas para orientar los agentes de research
+    items:
+      type: string
+  proposal_summary:
+    type: string
+    description: >
+      Resumen estructurado de la propuesta (400-600 palabras) extraído del input original,
+      sea este breve o un documento extenso. Los agentes de research usan este campo
+      como referencia principal en lugar del texto completo.
+  clarification_needed:
+    type: array
+    description: Preguntas concretas al usuario (solo si status=needs_more_info)
+    items:
+      type: string
+
+# Contrato de salida de cada agente de research
+agent_output:
+  agent_id:
+    type: string
+    description: Identificador del agente (ej. "consensus", "market-projects")
+  status:
+    type: string
+    enum: [completed, skipped, error]
+  summary:
+    type: string
+    description: Resumen en 2-4 frases de los hallazgos principales
+  evidence:
+    type: array
+    description: Lista de evidencias concretas que soportan el summary
+    items:
+      source: string
+      finding: string
+  confidence:
+    type: string
+    enum: [low, medium, high]
+    description: Nivel de confianza en los hallazgos
+  recommendation:
+    type: string
+    enum: [continue, stop]
+    description: >
+      "stop" si la evidencia es suficientemente concluyente para no necesitar
+      más módulos de research. "continue" si se recomienda ejecutar el siguiente.
+  findings:
+    type: object
+    description: Hallazgos detallados específicos del agente (estructura libre por agente)
+
+# Contrato de entrada del agente de síntesis
+synthesis_input:
+  project_name: string
+  description: string
+  agent_results:
+    type: array
+    description: Array con el output de cada agente ejecutado (en orden de ejecución)
+
+# Contrato de salida del agente de síntesis
+synthesis_output:
+  decision:
+    type: string
+    enum: [ask_more_info, propose_experiment]
+    description: >
+      "ask_more_info" si la investigación revela lagunas críticas que el usuario
+      debe aclarar antes de avanzar. "propose_experiment" si hay suficiente claridad
+      para definir un experimento de validación concreto.
+  rationale:
+    type: string
+    description: Razonamiento que justifica la decisión
+  next_steps:
+    type: array
+    description: Preguntas concretas (si ask_more_info) o pasos del experimento (si propose_experiment)
+    items:
+      type: string
+  synthesis_notes:
+    type: string
+    description: Resumen narrativo de cómo encajan los hallazgos de los distintos módulos

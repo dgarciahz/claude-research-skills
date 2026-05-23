@@ -1,0 +1,286 @@
+# Research Framework
+
+Un framework de investigación multi-agente para Claude Code que analiza proyectos desde múltiples ángulos y produce una recomendación accionable.
+
+---
+
+## Índice
+
+1. [Contexto](#contexto)
+2. [Quick Start](#quick-start)
+3. [Install & Config](#install--config)
+4. [Deep Dive](#deep-dive)
+5. [Agents](#agents)
+6. [Extending](#extending)
+
+---
+
+## Contexto
+
+El Research Framework orquesta una secuencia de agentes de investigación, cada uno especializado en una fuente distinta de información. Antes del research, un agente de análisis caracteriza la propuesta recibida (fundamento técnico, diferenciales, casos de uso) y genera un resumen estructurado que orienta a los agentes posteriores. Al final, un agente de síntesis confronta los hallazgos y decide el próximo paso: pedir más información al usuario o proponer un experimento de validación.
+
+El framework está diseñado para evaluar propuestas que llegan de terceros — puede recibir tanto una descripción breve como un documento extenso.
+
+**Principios de diseño:**
+
+- **Análisis previo** — antes de buscar, el framework caracteriza la propuesta: qué la fundamenta, qué dice ser diferente y para qué casos de uso. El research se orienta por estas hipótesis, no por la descripción cruda.
+- **Aislamiento de contexto** — cada agente corre en su propio contexto y no "contamina" la conversación principal. Solo sus resultados (JSON estructurado) llegan al orquestador.
+- **IO definida** — todos los agentes comparten el mismo contrato de entrada y salida (`config/io-schema.yaml`), lo que hace sus outputs comparables y la síntesis predecible.
+- **Early exit** — si un agente devuelve confianza alta y recomienda parar, los agentes posteriores se omiten y se pasa directamente a síntesis.
+- **Selección de módulos** — antes de ejecutar, el usuario puede elegir qué agentes correr y cuáles omitir.
+- **Memoria acumulada** — los resultados finales se guardan en `data/projects/` con nombre `YYYY.MM.DD-{proyecto}.md` y se acumulan con el tiempo.
+
+---
+
+## Quick Start
+
+Una vez instalado (ver [Install & Config](#install--config)), usa el framework así:
+
+```
+"Analiza este proyecto: [descripción del proyecto]"
+"Investiga esta idea: [descripción]"
+"Quiero hacer research sobre: [descripción]"
+```
+
+La descripción puede ser breve (unas líneas) o un documento completo. Si tienes un fichero, puedes indicar la ruta y el orquestador lo leerá. El framework primero caracterizará la propuesta (fundamento técnico, diferenciales, casos de uso) y te mostrará un resumen del análisis antes de lanzar los módulos de research. Al terminar, recibirás un informe con la decisión y los próximos pasos, guardado en `research/data/projects/`.
+
+---
+
+## Install & Config
+
+### 1. Copiar el framework
+
+Copia la carpeta `research/` completa a la raíz del proyecto donde quieras usarlo.
+
+### 2. Inicializar
+
+Dile a Claude en ese proyecto:
+
+```
+"Ejecuta research/INIT.md"
+```
+
+Claude leerá `research/INIT.md` y hará automáticamente:
+- Añadir `@research/RESEARCH.md` al `CLAUDE.md` del proyecto (bloque `<!-- RESEARCH:START/END -->`)
+- Añadir `research/wip/` y `research/state/` al `.gitignore`
+
+### 3. Reiniciar Claude Code
+
+Necesario para que el `@filepath` cargue en el contexto de sistema.
+
+### 4. Añadir datos de referencia (opcional)
+
+Coloca ficheros `.md` con descripciones de proyectos del mercado en `research/data/market/`. El agente `market-projects` los leerá para el análisis competitivo. Sin ellos, ese módulo informará que no hay datos y seguirá adelante.
+
+### 5. Configurar NotebookLM (opcional)
+
+El agente `notebooklm` requiere el MCP server de NotebookLM configurado en `.mcp.json`. Si no está disponible, el módulo se marca automáticamente como `skipped` y el framework continúa.
+
+---
+
+## Deep Dive
+
+### Estructura de directorios
+
+```
+research/
+├── RESEARCH.md          ← orquestador cargado via @filepath en CLAUDE.md
+├── INIT.md              ← instrucciones de primera instalación
+├── README.md            ← esta guía
+├── config/              ← toda la configuración del framework
+├── agents/              ← un .md por agente de research + síntesis
+├── data/
+│   ├── market/          ← ficheros .md de proyectos del mercado (input estático)
+│   └── projects/        ← resultados acumulados de análisis (output persistente)
+├── wip/                 ← resultados intermedios de la ejecución actual (gitignored)
+└── state/               ← estado de ejecución (gitignored)
+```
+
+---
+
+### `RESEARCH.md` — El orquestador
+
+Cargado en el contexto de sistema via `@research/RESEARCH.md` en `CLAUDE.md`. Contiene las instrucciones completas de orquestación: cuándo activar el framework, cómo recoger el input, cómo seleccionar módulos, cómo lanzar cada agente, la lógica de early exit y cómo presentar el resultado final.
+
+No necesitas modificarlo salvo que quieras cambiar el comportamiento del orquestador.
+
+---
+
+### `config/workflow.yaml` — Governance
+
+Define qué agentes existen, en qué orden corren y las condiciones de parada anticipada.
+
+```yaml
+version: "1.0"
+
+pre_analysis:
+  file: agents/analysis.md
+  description: Caracteriza la propuesta — fundamento técnico, diferenciales y casos de uso
+
+agents:
+  - id: notebooklm
+    file: agents/notebooklm.md
+    order: 1
+    description: Research conversacional en cuadernos de NotebookLM
+
+  - id: market-projects
+    file: agents/market-projects.md
+    order: 2
+    description: Análisis de proyectos de referencia en data/market/
+
+  - id: consensus
+    file: agents/consensus.md
+    order: 3
+    description: Síntesis del consenso de mercado via búsqueda web
+
+synthesis:
+  file: agents/synthesis.md
+
+exit_conditions:
+  early_exit_on_confidence: high
+  # Si un agente devuelve confidence=high y recommendation=stop,
+  # los posteriores se omiten y se pasa directamente a síntesis.
+
+output:
+  dir: data/projects
+  filename_format: "{YYYY}.{MM}.{DD}-{project_name}"
+  format: markdown
+```
+
+Para añadir un nuevo agente: añade una entrada aquí con el `id`, `file` y `order` correspondiente.
+
+---
+
+### `config/settings.yaml` — Configuración del entorno
+
+Rutas internas del framework y límites operativos.
+
+```yaml
+paths:
+  market_data_dir: data/market
+  projects_output_dir: data/projects
+  wip_dir: wip
+  state_dir: state
+
+default_model: claude-sonnet-4-6
+market_projects_max_files: 20
+```
+
+---
+
+### `config/io-schema.yaml` — Contrato de IO
+
+Define el esquema de entrada y salida que todos los agentes deben respetar. Es la interfaz que hace posible que el orquestador y el agente de síntesis procesen outputs de distintos módulos de forma uniforme.
+
+**Input al framework:**
+
+| Campo | Tipo | Requerido | Descripción |
+|---|---|---|---|
+| `project_name` | string | sí | Nombre corto del proyecto (sin espacios) |
+| `description` | string | sí | Texto de la propuesta — puede ser breve o un documento extenso |
+| `document_path` | string | no | Ruta a un fichero con la propuesta (alternativa o complemento a `description`) |
+| `questions` | array | no | Preguntas específicas que el usuario quiere responder |
+
+**Output del agente de análisis previo (`analysis_output`):**
+
+| Campo | Tipo | Valores posibles | Descripción |
+|---|---|---|---|
+| `status` | string | `completed`, `needs_more_info` | Si la propuesta tiene sustancia suficiente para investigar |
+| `proposal_summary` | string | — | Resumen estructurado de 400-600 palabras de la propuesta |
+| `scientific_basis` | string | — | Fundamento científico/tecnológico subyacente |
+| `differentiators` | array | — | Diferenciales afirmados con hipótesis verificables (`aspect`, `hypothesis`) |
+| `use_cases` | array | — | Casos de uso con usuario objetivo (`use_case`, `target_user`) |
+| `clarification_needed` | array | — | Preguntas al usuario (solo si `needs_more_info`) |
+
+**Output de cada agente de research:**
+
+| Campo | Tipo | Valores posibles | Descripción |
+|---|---|---|---|
+| `agent_id` | string | — | Identificador del agente |
+| `status` | string | `completed`, `skipped`, `error` | Estado de la ejecución |
+| `summary` | string | — | Resumen de hallazgos en 2-4 frases |
+| `evidence` | array | — | Lista de evidencias con `source` y `finding` |
+| `confidence` | string | `low`, `medium`, `high` | Confianza en los hallazgos |
+| `recommendation` | string | `continue`, `stop` | Si `high`+`stop` → early exit |
+| `findings` | object | — | Hallazgos detallados específicos del agente |
+
+**Output del agente de síntesis:**
+
+| Campo | Tipo | Valores posibles | Descripción |
+|---|---|---|---|
+| `decision` | string | `ask_more_info`, `propose_experiment` | Próximo paso recomendado |
+| `rationale` | string | — | Razonamiento detrás de la decisión |
+| `next_steps` | array | — | Preguntas (si `ask_more_info`) o pasos del experimento |
+| `synthesis_notes` | string | — | Cómo encajan los hallazgos entre sí |
+
+---
+
+### `data/market/` — Datos de referencia
+
+Ficheros `.md` que describen proyectos existentes en el mercado. Los añade el usuario manualmente. El agente `market-projects` los lee y los contrasta con el proyecto analizado. Formato libre; cuanto más estructurado, mejor el análisis.
+
+### `data/projects/` — Resultados acumulados
+
+Informes generados automáticamente por el agente de síntesis, con nombre `YYYY.MM.DD-{project_name}.md`. Se acumulan con el tiempo y forman una base de conocimiento de los proyectos analizados.
+
+### `wip/` y `state/`
+
+Directorios gitignored. `wip/` contiene los JSONs intermedios de la ejecución actual (uno por agente). `state/` está reservado para el estado del framework. Se limpian al inicio de cada ejecución.
+
+---
+
+## Agents
+
+Cada agente es un fichero `.md` en `research/agents/` con frontmatter YAML (modelo, herramientas disponibles) y un prompt de instrucciones. Todos escriben su output en `research/wip/{id}.json` siguiendo el esquema de `config/io-schema.yaml`.
+
+Agentes disponibles actualmente:
+
+| Agente | Fichero | Rol | Fuente de información |
+|---|---|---|---|
+| Analysis | `agents/analysis.md` | Pre-research | Razonamiento sobre la propuesta recibida |
+| NotebookLM | `agents/notebooklm.md` | Research | Cuadernos de Google NotebookLM via MCP |
+| Market Projects | `agents/market-projects.md` | Research | Ficheros `.md` en `data/market/` |
+| Consensus | `agents/consensus.md` | Research | Búsqueda web (WebSearch + WebFetch) |
+| Synthesis | `agents/synthesis.md` | Síntesis | Outputs de los agentes anteriores en `wip/` |
+
+> La documentación detallada de cada agente (criterios de evaluación, queries que realiza, cómo interpretar sus hallazgos) se desarrollará en ficheros individuales dentro de `agents/`.
+
+---
+
+## Extending
+
+Para añadir un nuevo módulo de research al framework:
+
+**1. Crea el fichero del agente**
+
+Crea `research/agents/{nuevo-id}.md` con este esquema:
+
+```markdown
+---
+description: Descripción del agente
+model: claude-sonnet-4-6
+tools:
+  - [herramientas necesarias]
+---
+
+# Agente: {Nombre}
+
+[Instrucciones del agente]
+
+## Output que debes producir
+
+Escribe `research/wip/{nuevo-id}.json` siguiendo `research/config/io-schema.yaml`.
+```
+
+**2. Regístralo en `workflow.yaml`**
+
+Añade una entrada en la sección `agents` de `research/config/workflow.yaml`:
+
+```yaml
+- id: nuevo-id
+  file: agents/nuevo-id.md
+  order: 4          # el siguiente en la secuencia
+  description: Qué hace este agente
+```
+
+El orquestador lo incluirá automáticamente en la próxima ejecución.

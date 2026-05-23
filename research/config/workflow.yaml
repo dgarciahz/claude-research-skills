@@ -1,0 +1,39 @@
+version: "1.0"
+
+# Agente de análisis previo (corre antes de los módulos de research)
+pre_analysis:
+  file: agents/analysis.md
+  description: Descompone el input en fundamento técnico, diferenciales y casos de uso para orientar el research
+
+# Orden y configuración de los agentes de research
+agents:
+  - id: notebooklm
+    file: agents/notebooklm.md
+    order: 1
+    description: Research conversacional en cuadernos de NotebookLM
+
+  - id: market-projects
+    file: agents/market-projects.md
+    order: 2
+    description: Análisis de proyectos de referencia en data/market/
+
+  - id: consensus
+    file: agents/consensus.md
+    order: 3
+    description: Síntesis del consenso de mercado via búsqueda web
+
+# Agente de síntesis (siempre corre al final, con todos los resultados)
+synthesis:
+  file: agents/synthesis.md
+
+# Condiciones de salida anticipada
+exit_conditions:
+  early_exit_on_confidence: high
+  # Si un agente devuelve confidence=high y recommendation=stop,
+  # los agentes posteriores se omiten y se pasa directamente a síntesis.
+
+# Configuración del output final
+output:
+  dir: data/projects
+  filename_format: "{YYYY}.{MM}.{DD}-{project_name}"
+  format: markdown
