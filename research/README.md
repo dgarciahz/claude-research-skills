@@ -48,9 +48,15 @@ La descripción puede ser breve (unas líneas) o un documento completo. Si tiene
 
 ## Install & Config
 
-### 1. Copiar el framework
+### 1. Clonar el template
 
-Copia la carpeta `research/` completa a la raíz del proyecto donde quieras usarlo.
+Clona el repositorio o usa **"Use this template"** en GitHub para crear tu propio repo:
+
+```bash
+git clone https://github.com/local_dgarciahz/claude-research-skills.git
+```
+
+Todos los resultados de research (`data/projects/`) y los datos de referencia que añadas (`data/market/`) son locales y están gitignoreados — no se suben al repositorio.
 
 ### 2. Inicializar
 
@@ -60,7 +66,7 @@ Dile a Claude en ese proyecto:
 "Ejecuta research/INIT.md"
 ```
 
-Claude leerá `research/INIT.md` y hará automáticamente:
+Claude ejecutará los pasos de inicialización automáticamente:
 - Añadir `@research/RESEARCH.md` al `CLAUDE.md` del proyecto (bloque `<!-- RESEARCH:START/END -->`)
 - Añadir `research/wip/` y `research/state/` al `.gitignore`
 
@@ -72,7 +78,21 @@ Necesario para que el `@filepath` cargue en el contexto de sistema.
 
 Coloca ficheros `.md` con descripciones de proyectos del mercado en `research/data/market/`. El agente `market-projects` los leerá para el análisis competitivo. Sin ellos, ese módulo informará que no hay datos y seguirá adelante.
 
-### 5. Configurar NotebookLM (opcional)
+### 5. Directorios de datos
+
+El directorio `research/data/` es completamente gitignoreado. INIT.md lo crea con tres subdirectorios:
+
+- `data/in/` — coloca aquí los documentos de propuesta a analizar
+- `data/market/` — ficheros `.md` de referencia competitiva para el agente Market Projects
+- `data/projects/` — resultados generados automáticamente (informes de research)
+
+### 6. Actualizar el framework (cuando haya nuevas versiones)
+
+Pide a Claude: `"research pull"`. El framework actualiza solo el core (agents/, config/, skills/, RESEARCH.md) sin tocar tus datos ni resultados.
+
+Para proponer mejoras al framework: `"research push"`. Se abre un PR en el repositorio de origen.
+
+### 6. Configurar NotebookLM (opcional)
 
 El agente `notebooklm` requiere el MCP server de NotebookLM configurado en `.mcp.json`. Si no está disponible, el módulo se marca automáticamente como `skipped` y el framework continúa.
 
@@ -85,14 +105,20 @@ El agente `notebooklm` requiere el MCP server de NotebookLM configurado en `.mcp
 ```
 research/
 ├── RESEARCH.md          ← orquestador cargado via @filepath en CLAUDE.md
-├── INIT.md              ← instrucciones de primera instalación
+├── INIT.md              ← instalador one-shot (ejecutar una vez por proyecto)
 ├── README.md            ← esta guía
-├── config/              ← toda la configuración del framework
-├── agents/              ← un .md por agente de research + síntesis
+├── skills/              ← skill-like files cargados via @filepath
+│   ├── research--template-pull.md   ← actualizar framework core desde upstream
+│   └── research--template-push.md   ← proponer mejoras via PR
+├── agents/              ← un .md por agente (llamados via Agent tool)
+├── config/              ← configuración del framework
+│   ├── config.yaml      ← pipeline de agentes, settings y repo de origen
+│   └── io-schema.yaml   ← contrato de entrada/salida de todos los agentes
 ├── data/
-│   ├── market/          ← ficheros .md de proyectos del mercado (input estático)
-│   └── projects/        ← resultados acumulados de análisis (output persistente)
-├── wip/                 ← resultados intermedios de la ejecución actual (gitignored)
+│   ├── in/              ← documentos de propuesta a analizar (gitignored, local)
+│   ├── market/          ← tus ficheros .md de referencia competitiva (gitignored, local)
+│   └── projects/        ← tus resultados de research (gitignored, local)
+├── wip/                 ← JSONs intermedios de la ejecución actual (gitignored)
 └── state/               ← estado de ejecución (gitignored)
 ```
 
@@ -106,65 +132,15 @@ No necesitas modificarlo salvo que quieras cambiar el comportamiento del orquest
 
 ---
 
-### `config/workflow.yaml` — Governance
+### `config/config.yaml` — Configuración del framework
 
-Define qué agentes existen, en qué orden corren y las condiciones de parada anticipada.
+Un único fichero con tres secciones diferenciadas:
 
-```yaml
-version: "1.0"
+- **`workflow`**: pipeline de agentes (qué corre, en qué orden, condiciones de early exit, formato de output)
+- **`settings`**: rutas internas y límites operativos
+- **`source`**: URL del repo de origen (usado por `research--template-pull` y `research--template-push`)
 
-pre_analysis:
-  file: agents/analysis.md
-  description: Caracteriza la propuesta — fundamento técnico, diferenciales y casos de uso
-
-agents:
-  - id: notebooklm
-    file: agents/notebooklm.md
-    order: 1
-    description: Research conversacional en cuadernos de NotebookLM
-
-  - id: market-projects
-    file: agents/market-projects.md
-    order: 2
-    description: Análisis de proyectos de referencia en data/market/
-
-  - id: consensus
-    file: agents/consensus.md
-    order: 3
-    description: Síntesis del consenso de mercado via búsqueda web
-
-synthesis:
-  file: agents/synthesis.md
-
-exit_conditions:
-  early_exit_on_confidence: high
-  # Si un agente devuelve confidence=high y recommendation=stop,
-  # los posteriores se omiten y se pasa directamente a síntesis.
-
-output:
-  dir: data/projects
-  filename_format: "{YYYY}.{MM}.{DD}-{project_name}"
-  format: markdown
-```
-
-Para añadir un nuevo agente: añade una entrada aquí con el `id`, `file` y `order` correspondiente.
-
----
-
-### `config/settings.yaml` — Configuración del entorno
-
-Rutas internas del framework y límites operativos.
-
-```yaml
-paths:
-  market_data_dir: data/market
-  projects_output_dir: data/projects
-  wip_dir: wip
-  state_dir: state
-
-default_model: claude-sonnet-4-6
-market_projects_max_files: 20
-```
+Para añadir un nuevo agente: añade una entrada en `workflow.research_agents` con el `id`, `file` y `order` correspondiente.
 
 ---
 
@@ -179,18 +155,17 @@ Define el esquema de entrada y salida que todos los agentes deben respetar. Es l
 | `project_name` | string | sí | Nombre corto del proyecto (sin espacios) |
 | `description` | string | sí | Texto de la propuesta — puede ser breve o un documento extenso |
 | `document_path` | string | no | Ruta a un fichero con la propuesta (alternativa o complemento a `description`) |
-| `questions` | array | no | Preguntas específicas que el usuario quiere responder |
 
 **Output del agente de análisis previo (`analysis_output`):**
 
 | Campo | Tipo | Valores posibles | Descripción |
 |---|---|---|---|
-| `status` | string | `completed`, `needs_more_info` | Si la propuesta tiene sustancia suficiente para investigar |
+| `status` | string | `completed`, `insufficient_info` | Si la propuesta tiene sustancia suficiente para investigar |
 | `proposal_summary` | string | — | Resumen estructurado de 400-600 palabras de la propuesta |
 | `scientific_basis` | string | — | Fundamento científico/tecnológico subyacente |
 | `differentiators` | array | — | Diferenciales afirmados con hipótesis verificables (`aspect`, `hypothesis`) |
 | `use_cases` | array | — | Casos de uso con usuario objetivo (`use_case`, `target_user`) |
-| `clarification_needed` | array | — | Preguntas al usuario (solo si `needs_more_info`) |
+| `missing_elements` | array | — | Elementos ausentes en la propuesta (solo si `insufficient_info`) |
 
 **Output de cada agente de research:**
 
@@ -235,13 +210,13 @@ Cada agente es un fichero `.md` en `research/agents/` con frontmatter YAML (mode
 
 Agentes disponibles actualmente:
 
-| Agente | Fichero | Rol | Fuente de información |
+| Agente | Fichero | Rol | Descripción |
 |---|---|---|---|
-| Analysis | `agents/analysis.md` | Pre-research | Razonamiento sobre la propuesta recibida |
-| NotebookLM | `agents/notebooklm.md` | Research | Cuadernos de Google NotebookLM via MCP |
-| Market Projects | `agents/market-projects.md` | Research | Ficheros `.md` en `data/market/` |
-| Consensus | `agents/consensus.md` | Research | Búsqueda web (WebSearch + WebFetch) |
-| Synthesis | `agents/synthesis.md` | Síntesis | Outputs de los agentes anteriores en `wip/` |
+| Analysis | `agents/analysis.md` | Pre-research | Caracteriza la propuesta: fundamento técnico, diferenciales e hipótesis, casos de uso |
+| NotebookLM | `agents/notebooklm.md` | Research | Research conversacional en cuadernos de Google NotebookLM via MCP |
+| Market Projects | `agents/market-projects.md` | Research | Analiza transcripciones de proyectos existentes para detectar si los casos de uso ya tienen solución |
+| Consensus | `agents/consensus.md` | Research | Consulta consensus.app para validar el fundamento científico/tecnológico de la propuesta |
+| Synthesis | `agents/synthesis.md` | Síntesis | Sintetiza hallazgos, detecta contradicciones y propone un test de feasibility orientado a mercado |
 
 > La documentación detallada de cada agente (criterios de evaluación, queries que realiza, cómo interpretar sus hallazgos) se desarrollará en ficheros individuales dentro de `agents/`.
 
@@ -272,9 +247,9 @@ tools:
 Escribe `research/wip/{nuevo-id}.json` siguiendo `research/config/io-schema.yaml`.
 ```
 
-**2. Regístralo en `workflow.yaml`**
+**2. Regístralo en `config.yaml`**
 
-Añade una entrada en la sección `agents` de `research/config/workflow.yaml`:
+Añade una entrada en `workflow.research_agents` de `research/config/config.yaml`:
 
 ```yaml
 - id: nuevo-id

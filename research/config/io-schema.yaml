@@ -17,13 +17,9 @@ input:
     type: string
     required: false
     description: >
-      Ruta opcional a un fichero con la propuesta completa (alternativa o complemento
-      a description). El orquestador lee el fichero y lo pasa al agente de análisis.
-  questions:
-    type: array
-    required: false
-    description: Preguntas específicas que el usuario quiere que la investigación responda
-
+      Nombre del fichero de entrada situado en research/data/in/ (ej. "propuesta.pdf").
+      El orquestador construye la ruta completa automáticamente. Alternativa o complemento
+      a description. Los ficheros en data/in/ son gitignoreados y nunca se suben al repo.
 # Contrato de salida del agente de análisis previo
 analysis_output:
   agent_id:
@@ -31,10 +27,10 @@ analysis_output:
     const: "analysis"
   status:
     type: string
-    enum: [completed, needs_more_info]
+    enum: [completed, insufficient_info]
     description: >
       "completed" si la descripción tiene suficiente sustancia para extraer estructura.
-      "needs_more_info" si la descripción es tan vaga que no permite formular hipótesis.
+      "insufficient_info" si la propuesta es tan vaga que no permite formular hipótesis — condición de salida.
   scientific_basis:
     type: string
     description: Fundamento científico/tecnológico subyacente de la propuesta
@@ -50,20 +46,15 @@ analysis_output:
     items:
       use_case: string
       target_user: string
-  research_angles:
-    type: array
-    description: Preguntas de investigación específicas para orientar los agentes de research
-    items:
-      type: string
   proposal_summary:
     type: string
     description: >
       Resumen estructurado de la propuesta (400-600 palabras) extraído del input original,
       sea este breve o un documento extenso. Los agentes de research usan este campo
       como referencia principal en lugar del texto completo.
-  clarification_needed:
+  missing_elements:
     type: array
-    description: Preguntas concretas al usuario (solo si status=needs_more_info)
+    description: Elementos ausentes en la propuesta (solo si status=insufficient_info) — para que el evaluador pueda comunicárselos al investigador
     items:
       type: string
 

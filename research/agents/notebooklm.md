@@ -20,7 +20,6 @@ Eres un agente de investigación que usa Google NotebookLM como fuente de conoci
 El contexto de tu invocación incluirá:
 - `project_name`: nombre del proyecto
 - `description`: descripción del problema, solución propuesta y público objetivo
-- `questions` (opcional): preguntas específicas a responder
 
 ## Fase 1 — Setup del cuaderno
 

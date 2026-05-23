@@ -16,10 +16,10 @@ No actives el framework para preguntas puntuales de mercado o búsquedas ad hoc 
 
 Antes de lanzar ningún agente, asegúrate de tener:
 - **project_name**: nombre corto del proyecto (sin espacios, usa guiones). Si no lo has recibido, pídelo.
-- **description**: texto de la propuesta. Puede ser breve (problema + solución + público) o extenso (documento completo pegado). Si el usuario proporciona una ruta a un fichero (`document_path`), léelo con la herramienta Read y úsalo como `description`.
-- **questions** (opcional): preguntas específicas que el usuario quiere que se respondan.
+- **description**: texto de la propuesta. Puede ser breve (problema + solución + público) o extenso (documento completo pegado). Si el usuario menciona un fichero, consulta el punto siguiente.
+- **document_path** (opcional): si el usuario indica un nombre de fichero, búscalo en `research/data/in/`. Lee el fichero con la herramienta Read y úsalo como `description`. Confirma al usuario: "He leído el documento [nombre] desde research/data/in/. Procedo con el análisis."
 
-Si el usuario proporciona un fichero, confirma que lo has leído antes de continuar: "He leído el documento [nombre]. Procedo con el análisis."
+> Los ficheros en `research/data/in/` son gitignoreados — el usuario puede colocar documentos de propuesta ahí sin riesgo de que se suban al repositorio.
 
 ## Paso 1b — Limpiar WIP y ejecutar análisis previo
 
@@ -27,11 +27,15 @@ Si el usuario proporciona un fichero, confirma que lo has leído antes de contin
 
 **Después**, lanza el agente `agents/analysis.md` via `Agent tool`. En el prompt incluye:
 - El contenido de `research/agents/analysis.md` como instrucciones base
-- El input del usuario: `project_name`, `description`, `questions`
+- El input del usuario: `project_name`, `description`
 - La ruta `research/wip/` donde debe escribir `analysis.json`
 
 Lee `research/wip/analysis.json` cuando el agente termine:
-- Si `status == "needs_more_info"` → muestra las `clarification_needed` al usuario y espera su respuesta. Incorpora la información adicional a la `description` y relanza el agente de análisis.
+- Si `status == "insufficient_info"` → detén el framework y muestra al evaluador:
+
+> **Propuesta insuficiente para analizar.**
+> Elementos que faltan: [lista de `missing_elements`]
+
 - Si `status == "completed"` → muestra al usuario un resumen del análisis en este formato:
 
 > **Análisis previo:**
@@ -43,12 +47,12 @@ Después continúa al Paso 2.
 
 ## Paso 2 — Leer la configuración
 
-Lee `research/config/workflow.yaml` para conocer el orden de los agentes y las condiciones de salida anticipada.
+Lee `research/config/config.yaml` para conocer el pipeline de agentes, el orden de ejecución y las condiciones de salida anticipada (`workflow`), así como las rutas y límites operativos (`settings`).
 Lee `research/config/io-schema.yaml` para conocer el contrato IO que cada agente debe respetar.
 
 ## Paso 3 — Selección de módulos
 
-Lista los módulos disponibles al usuario (en orden de ejecución según `workflow.yaml`) y pregunta:
+Lista los módulos disponibles al usuario (en orden de ejecución según `config.yaml → workflow.research_agents`) y pregunta:
 
 > "Tengo disponibles los siguientes módulos de research:
 > 1. **NotebookLM** — consulta tus cuadernos de Google NotebookLM
@@ -68,7 +72,7 @@ Para cada agente seleccionado (en orden ascendente por `order`):
 
 1. Lanza el agente via `Agent tool`. En el prompt incluye:
    - El contenido del fichero del agente (`agents/{id}.md`) como instrucciones base
-   - El input del usuario: `project_name`, `description`, `questions`
+   - El input del usuario: `project_name`, `description`
    - El `proposal_summary` y los campos estructurados de `research/wip/analysis.json` (fundamento técnico, diferenciales, casos de uso) — usa el `proposal_summary` como referencia de la propuesta en lugar del texto completo original si este era extenso
    - La ruta al directorio `research/wip/` donde debe escribir su output
 
@@ -102,4 +106,4 @@ Lee el contenido de `research/data/projects/YYYY.MM.DD-{project_name}.md` y pres
 
 - Los directorios `research/wip/` y `research/state/` son gitignored — contienen datos temporales de ejecución.
 - Los resultados finales en `research/data/projects/` sí se persisten — son la memoria acumulada del framework.
-- Para añadir nuevos módulos de research, crea un nuevo fichero en `research/agents/` y añade su entrada en `research/config/workflow.yaml`.
+- Para añadir nuevos módulos de research, crea un nuevo fichero en `research/agents/` y añade su entrada en `research/config/config.yaml` bajo `workflow.research_agents`.

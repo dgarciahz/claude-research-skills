@@ -1,0 +1,53 @@
+version: "1.0"
+
+# Pipeline de agentes
+workflow:
+  pre_analysis:
+    file: agents/analysis.md
+    description: Caracteriza la propuesta — fundamento técnico, diferenciales y casos de uso
+
+  research_agents:
+    - id: notebooklm
+      file: agents/notebooklm.md
+      order: 1
+      description: Research conversacional en cuadernos de NotebookLM
+
+    - id: market-projects
+      file: agents/market-projects.md
+      order: 2
+      description: Analiza transcripciones de proyectos existentes para detectar si los casos de uso ya tienen solución
+
+    - id: consensus
+      file: agents/consensus.md
+      order: 3
+      description: Consulta consensus.app para validar el fundamento científico/tecnológico de la propuesta
+
+  synthesis:
+    file: agents/synthesis.md
+    description: Sintetiza hallazgos, detecta contradicciones y propone un test de feasibility orientado a mercado
+
+  exit_conditions:
+    early_exit_on_confidence: high
+    # Si un agente devuelve confidence=high y recommendation=stop,
+    # los agentes posteriores se omiten y se pasa directamente a síntesis.
+
+  output:
+    dir: data/projects
+    filename_format: "{YYYY}.{MM}.{DD}-{project_name}"
+    format: markdown
+
+# Configuración operativa
+settings:
+  paths:
+    input_dir: data/in
+    market_data_dir: data/market
+    projects_output_dir: data/projects
+    wip_dir: wip
+    state_dir: state
+  default_model: claude-sonnet-4-6
+  market_projects_max_files: 20
+
+# Repositorio de origen (para research--template-pull y research--template-push)
+source:
+  upstream_url: https://github.com/local_dgarciahz/claude-research-skills.git
+  upstream_branch: main

@@ -16,7 +16,6 @@ No uses herramientas externas de búsqueda. Opera solo con razonamiento sobre el
 El contexto de tu invocación incluirá:
 - `project_name`: nombre del proyecto
 - `description`: texto de la propuesta — puede ser breve (unas líneas) o un documento extenso
-- `questions` (opcional): preguntas específicas que el usuario quiere responder
 
 ## Lo que debes hacer
 
@@ -38,12 +37,14 @@ A partir de la propuesta (breve o resumida), extrae:
 
 3. **Casos de uso**: Identifica los escenarios de uso concretos que la propuesta resuelve. Para cada uno, especifica el tipo de usuario objetivo. Los agentes de research determinarán si esos problemas ya están siendo abordados por otras soluciones.
 
-### Cuándo devolver `needs_more_info`
+### Cuándo devolver `insufficient_info`
 
-Si la propuesta es tan vaga que no puedes extraer el fundamento técnico ni los diferenciales con mínima confianza, devuelve `status: needs_more_info` con preguntas concretas al usuario. Ejemplos de propuestas insuficientes:
+Si la propuesta es tan vaga que no puedes extraer el fundamento técnico ni los diferenciales con mínima confianza, devuelve `status: insufficient_info`. Esto es una condición de salida — el evaluador comunicará al investigador lo que falta. Ejemplos de propuestas insuficientes:
 - Solo dice "una app para X" sin explicar el mecanismo
 - No hay ninguna pista de por qué sería mejor que lo existente
 - El público objetivo es tan amplio que no permite formular casos de uso
+
+En `missing_elements` lista los elementos concretos que faltan para poder analizar la propuesta.
 
 Si la propuesta tiene suficiente sustancia para comenzar (aunque sea imperfecta), prefiere `completed`.
 
@@ -69,10 +70,10 @@ Escribe un fichero JSON en `research/wip/analysis.json` con exactamente esta est
       "target_user": "Tipo de usuario concreto"
     }
   ],
-  "clarification_needed": []
+  "missing_elements": []
 }
 ```
 
-Si `status == "needs_more_info"`, el campo `clarification_needed` debe contener las preguntas concretas al usuario (y los demás campos pueden estar vacíos o con `proposal_summary` parcial).
+Si `status == "insufficient_info"`, el campo `missing_elements` debe listar los elementos que faltan (los demás campos pueden estar vacíos o con `proposal_summary` parcial). El framework se detendrá y presentará esta información al evaluador.
 
 Una vez escrito el fichero, responde con un breve resumen de los diferenciales identificados (2-3 frases) para que el orquestador sepa que has terminado.

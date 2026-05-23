@@ -4,3 +4,10 @@
 # Archivos de sistema
 .DS_Store
 Thumbs.db
+
+# Datos de usuario del Research Framework (locales, no se versionan)
+research/data/
+
+# Temporales del Research Framework
+research/wip/
+research/state/
