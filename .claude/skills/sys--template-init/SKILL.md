@@ -101,7 +101,6 @@ Llama a cada skill de la siguiente lista en orden. Si alguno falla, informa al u
 
 **Lista de inits de bloque:**
 - `per--init` — inicializa el sistema de personalización persistente
-- `n8n--init` — instala los skills de n8n desde czlonkowski/n8n-skills
 
 Para invocar cada uno, indícale al usuario que el skill se ejecutará automáticamente, y procede a seguir sus instrucciones como si el usuario lo hubiera invocado directamente.
 
