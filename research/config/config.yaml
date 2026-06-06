@@ -17,10 +17,10 @@ workflow:
       order: 2
       description: Analiza transcripciones de proyectos existentes para detectar si los casos de uso ya tienen solución
 
-    - id: consensus
-      file: agents/consensus.md
+    - id: semantic-scholar
+      file: agents/semantic-scholar.md
       order: 3
-      description: Consulta consensus.app para validar el fundamento científico/tecnológico de la propuesta
+      description: Consulta Semantic Scholar para validar el fundamento científico/tecnológico contra literatura peer-reviewed
 
   synthesis:
     file: agents/synthesis.md

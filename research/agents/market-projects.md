@@ -29,7 +29,7 @@ El contexto de tu invocación incluirá:
 
 ## Output que debes producir
 
-Escribe un fichero JSON en `research/wip/market-projects.json` con exactamente esta estructura (siguiendo `research/config/io-schema.yaml`):
+Escribe un fichero JSON en `{wip_dir}/market-projects.json` (usando la ruta `wip_dir` que recibirás en el prompt) con exactamente esta estructura (siguiendo `research/config/io-schema.yaml`):
 
 ```json
 {
@@ -63,5 +63,9 @@ Si `research/data/market/` está vacío, escribe el JSON con:
 
 - `confidence: high` + `recommendation: stop` → solo si los competidores existentes cubren exactamente el mismo espacio sin diferenciación posible.
 - En caso de duda, usa `confidence: medium` + `recommendation: continue`.
+
+### Caso de error inesperado
+
+Si ocurre un error que impide ejecutar el análisis, **no escribas ningún fichero**. Responde con un mensaje al orquestador: "market-projects error: [motivo breve]". El orquestador actualizará el estado.
 
 Una vez escrito el fichero, responde con un breve resumen de lo que encontraste (1-2 frases).

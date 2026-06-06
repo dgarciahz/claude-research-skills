@@ -21,16 +21,30 @@ Antes de lanzar ningún agente, asegúrate de tener:
 
 > Los ficheros en `research/data/in/` son gitignoreados — el usuario puede colocar documentos de propuesta ahí sin riesgo de que se suban al repositorio.
 
-## Paso 1b — Limpiar WIP y ejecutar análisis previo
+## Paso 1b — Determinar directorio WIP y ejecutar análisis previo
 
-**Primero**, borra cualquier fichero `.json` que haya en `research/wip/` de ejecuciones anteriores. Esto garantiza que la síntesis solo lee resultados de la ejecución actual.
+Deriva `wip_dir = research/wip/{project_name}/`.
 
-**Después**, lanza el agente `agents/analysis.md` via `Agent tool`. En el prompt incluye:
+**Si `wip_dir` no existe o está vacío**: créalo y continúa normalmente.
+
+**Si `wip_dir` ya contiene JSONs**: lee también `research/state/{project_name}.json` si existe para tener el estado completo del run anterior (completados, skipped, errores). Muestra al usuario un resumen:
+
+> "Ya existe un análisis para `{project_name}`:
+> ✓ analysis — completado
+> ✓ notebooklm — completado
+> ↷ market-projects — skipped (motivo)
+> ↷ semantic-scholar — skipped (motivo)
+>
+> ¿Qué módulos quieres regenerar? Escribe los nombres separados por comas, o deja en blanco para reutilizarlos todos."
+
+Espera la respuesta. Los módulos que el usuario quiera reutilizar (y tienen JSON en `wip_dir`): léelos directamente (no lances el agente) y aplica igualmente la lógica de early exit del Paso 4.
+
+**Después**, lanza el agente `agents/analysis.md` via `Agent tool` (a menos que el usuario haya indicado reutilizar el analysis existente). En el prompt incluye:
 - El contenido de `research/agents/analysis.md` como instrucciones base
 - El input del usuario: `project_name`, `description`
-- La ruta `research/wip/` donde debe escribir `analysis.json`
+- La ruta `wip_dir` donde debe escribir `analysis.json`
 
-Lee `research/wip/analysis.json` cuando el agente termine:
+Lee `{wip_dir}/analysis.json` cuando el agente termine (o directamente si se reutiliza):
 - Si `status == "insufficient_info"` → detén el framework y muestra al evaluador:
 
 > **Propuesta insuficiente para analizar.**
@@ -57,13 +71,13 @@ Lista los módulos disponibles al usuario (en orden de ejecución según `config
 > "Tengo disponibles los siguientes módulos de research:
 > 1. **NotebookLM** — consulta tus cuadernos de Google NotebookLM
 > 2. **Market Projects** — analiza los proyectos de referencia en `data/market/`
-> 3. **Consensus** — búsqueda web y síntesis del consenso de mercado
+> 3. **Semantic Scholar** — valida el fundamento científico contra literatura peer-reviewed
 >
 > ¿Quieres ejecutarlos todos, o prefieres omitir alguno?"
 
 Espera la respuesta del usuario antes de continuar:
 - Si dice "todos" o equivalente → ejecuta los tres en orden
-- Si indica módulos a omitir → márcalos como `skipped` y ejecútalos como tal (escribe un JSON mínimo con `status: skipped` en `wip/{id}.json`)
+- Si indica módulos a omitir → regístralos en `state/{project_name}.json` con `status: skipped`. No escribas ningún fichero en `wip/`.
 - Si no responde nada concreto → ejecuta todos por defecto
 
 ## Paso 4 — Ejecutar agentes en orden
@@ -73,27 +87,29 @@ Para cada agente seleccionado (en orden ascendente por `order`):
 1. Lanza el agente via `Agent tool`. En el prompt incluye:
    - El contenido del fichero del agente (`agents/{id}.md`) como instrucciones base
    - El input del usuario: `project_name`, `description`
-   - El `proposal_summary` y los campos estructurados de `research/wip/analysis.json` (fundamento técnico, diferenciales, casos de uso) — usa el `proposal_summary` como referencia de la propuesta en lugar del texto completo original si este era extenso
-   - La ruta al directorio `research/wip/` donde debe escribir su output
+   - El `proposal_summary` y los campos estructurados de `{wip_dir}/analysis.json` (fundamento técnico, diferenciales, casos de uso) — usa el `proposal_summary` como referencia de la propuesta en lugar del texto completo original si este era extenso
+   - La ruta `wip_dir` donde debe escribir su output
 
-2. Espera a que el agente termine y escriba su JSON en `research/wip/{id}.json`.
+2. Espera a que el agente termine:
+   - Si completó con resultado: su JSON estará en `{wip_dir}/{id}.json`. Actualiza `research/state/{project_name}.json` con `status: completed` y el mensaje del agente.
+   - Si skipped o error: el agente no habrá escrito ningún fichero. Actualiza `research/state/{project_name}.json` con `status: skipped` o `status: error` y el mensaje recibido.
 
-3. Lee el JSON resultante. Evalúa la condición de early exit:
+3. Evalúa la condición de early exit (solo si el agente completó con resultado):
    - Si `confidence == "high"` Y `recommendation == "stop"` → no lances más agentes, ve directamente al Paso 5.
    - En cualquier otro caso → lanza el siguiente agente.
 
-4. Informa brevemente al usuario tras cada agente: "Módulo [nombre] completado. [1 frase con el hallazgo principal]."
+4. Informa brevemente al usuario tras cada agente: "Módulo [nombre] completado/omitido. [1 frase con el hallazgo principal o el motivo del skip]."
 
 ## Paso 5 — Síntesis
 
 Lanza el agente de síntesis (`agents/synthesis.md`) via `Agent tool`. En el prompt incluye:
 - El contenido de `agents/synthesis.md` como instrucciones base
 - `project_name`, `description`
-- La ruta `research/wip/` para que lea los JSONs disponibles
+- La ruta `wip_dir` para que lea los JSONs disponibles
 - La fecha actual en formato YYYY.MM.DD
 
 El agente de síntesis escribirá:
-- `research/wip/synthesis.json`
+- `{wip_dir}/synthesis.json`
 - `research/data/projects/YYYY.MM.DD-{project_name}.md`
 
 ## Paso 6 — Presentar resultado
@@ -104,6 +120,7 @@ Lee el contenido de `research/data/projects/YYYY.MM.DD-{project_name}.md` y pres
 
 ## Notas
 
-- Los directorios `research/wip/` y `research/state/` son gitignored — contienen datos temporales de ejecución.
+- `research/wip/{project_name}/` — solo JSONs con resultados reales (`status: completed`). Gitignored.
+- `research/state/{project_name}.json` — traza completa de ejecución: todos los agentes con su status y mensaje, incluyendo skipped y errores. Gitignored.
 - Los resultados finales en `research/data/projects/` sí se persisten — son la memoria acumulada del framework.
 - Para añadir nuevos módulos de research, crea un nuevo fichero en `research/agents/` y añade su entrada en `research/config/config.yaml` bajo `workflow.research_agents`.

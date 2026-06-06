@@ -18,6 +18,13 @@
     "context7": {
       "command": "C:\\Program Files\\nodejs\\npx.cmd",
       "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "notebooklm": {
+      "command": "C:\\Python314\\python.exe",
+      "args": ["C:\\Users\\david\\.claude\\notebooklm_ssl_patch.py"],
+      "env": {
+        "SSL_CERT_FILE": "C:\\Users\\david\\.claude\\combined-cacert.pem"
+      }
     }
   }
 }

@@ -50,7 +50,7 @@ Si la propuesta tiene suficiente sustancia para comenzar (aunque sea imperfecta)
 
 ## Output que debes producir
 
-Escribe un fichero JSON en `research/wip/analysis.json` con exactamente esta estructura (siguiendo `research/config/io-schema.yaml`):
+Escribe un fichero JSON en `{wip_dir}/analysis.json` (usando la ruta `wip_dir` que recibirás en el prompt) con exactamente esta estructura (siguiendo `research/config/io-schema.yaml`):
 
 ```json
 {

@@ -96,6 +96,30 @@ Para proponer mejoras al framework: `"research push"`. Se abre un PR en el repos
 
 El agente `notebooklm` requiere el MCP server de NotebookLM configurado en `.mcp.json`. Si no está disponible, el módulo se marca automáticamente como `skipped` y el framework continúa.
 
+**Instalar el MCP:**
+
+```bash
+pip install notebooklm-mcp
+nlm login   # autenticación con tu cuenta Google
+```
+
+**Configurar en `.mcp.json`:**
+
+```json
+"notebooklm": {
+  "command": "C:\\Users\\{usuario}\\AppData\\Roaming\\Python\\Python3XX\\Scripts\\notebooklm-mcp.exe",
+  "env": {
+    "SSL_CERT_FILE": "C:\\Users\\{usuario}\\AppData\\Roaming\\Python\\Python3XX\\site-packages\\certifi\\cacert.pem"
+  }
+}
+```
+
+> **Windows — fix SSL obligatorio:** Sin `SSL_CERT_FILE`, el proceso falla con `CERTIFICATE_VERIFY_FAILED`. La variable apunta al bundle de certificados de `certifi`, que se instala junto con el paquete. Sustituye `{usuario}` y `Python3XX` por los valores reales de tu máquina.
+
+**Comportamiento del agente:**
+
+Cada ejecución crea un cuaderno nuevo en NotebookLM con nombre `research_fw_{project_name}`, lanza una búsqueda web basada en el fundamento técnico y los diferenciales identificados en el análisis previo, importa las fuentes encontradas al cuaderno, y después interroga ese cuaderno con tres preguntas de viabilidad. El cuaderno queda disponible en NotebookLM para consulta posterior.
+
 ---
 
 ## Deep Dive
@@ -118,8 +142,9 @@ research/
 │   ├── in/              ← documentos de propuesta a analizar (gitignored, local)
 │   ├── market/          ← tus ficheros .md de referencia competitiva (gitignored, local)
 │   └── projects/        ← tus resultados de research (gitignored, local)
-├── wip/                 ← JSONs intermedios de la ejecución actual (gitignored)
-└── state/               ← estado de ejecución (gitignored)
+├── wip/
+│   └── {project_name}/  ← JSONs de resultados reales (solo agentes con status: completed, gitignored)
+└── state/               ← traza completa de ejecución por proyecto (todos los agentes, gitignored)
 ```
 
 ---
@@ -200,7 +225,10 @@ Informes generados automáticamente por el agente de síntesis, con nombre `YYYY
 
 ### `wip/` y `state/`
 
-Directorios gitignored. `wip/` contiene los JSONs intermedios de la ejecución actual (uno por agente). `state/` está reservado para el estado del framework. Se limpian al inicio de cada ejecución.
+Directorios gitignored con responsabilidades distintas:
+
+- **`wip/{project_name}/`** — contiene únicamente los JSONs de agentes que terminaron con `status: completed`. Si un agente fue omitido o falló, no escribe fichero. El árbol de `wip/` es fuente de verdad visual: si el JSON existe, tiene datos útiles.
+- **`state/{project_name}.json`** — traza completa de la ejecución: todos los agentes con su estado real (`completed`, `skipped`, `error`, `pending`). Lo escribe y mantiene el orquestador, no los agentes. El orquestador lo lee al inicio de cada ejecución para mostrar el estado del run anterior y preguntar qué regenerar.
 
 ---
 
@@ -215,10 +243,46 @@ Agentes disponibles actualmente:
 | Analysis | `agents/analysis.md` | Pre-research | Caracteriza la propuesta: fundamento técnico, diferenciales e hipótesis, casos de uso |
 | NotebookLM | `agents/notebooklm.md` | Research | Research conversacional en cuadernos de Google NotebookLM via MCP |
 | Market Projects | `agents/market-projects.md` | Research | Analiza transcripciones de proyectos existentes para detectar si los casos de uso ya tienen solución |
-| Consensus | `agents/consensus.md` | Research | Consulta consensus.app para validar el fundamento científico/tecnológico de la propuesta |
-| Synthesis | `agents/synthesis.md` | Síntesis | Sintetiza hallazgos, detecta contradicciones y propone un test de feasibility orientado a mercado |
+| Semantic Scholar | `agents/semantic-scholar.md` | Research | Consulta Semantic Scholar para validar el fundamento científico/tecnológico contra literatura peer-reviewed |
+| Synthesis | `agents/synthesis.md` | Síntesis | Sintetiza hallazgos de todos los módulos, produce valoración agregada y propone experimentos priorizados |
 
-> La documentación detallada de cada agente (criterios de evaluación, queries que realiza, cómo interpretar sus hallazgos) se desarrollará en ficheros individuales dentro de `agents/`.
+### Agente NotebookLM — cómo funciona
+
+El agente crea un cuaderno nuevo en Google NotebookLM con nombre `research_fw_{project_name}`, construye una query de búsqueda web combinando el `scientific_basis` y los diferenciales más relevantes del análisis previo, y lanza esa búsqueda para poblar el cuaderno con fuentes reales (~10 documentos en modo `fast`).
+
+Con el cuaderno poblado, realiza tres queries conversacionales sobre las fuentes importadas:
+1. **Demanda real**: ¿hay evidencia de mercado para el fundamento técnico?
+2. **Precedentes y competidores**: ¿hay proyectos similares? ¿qué se puede aprender de ellos?
+3. **Criterios de validación**: ¿qué debería validarse primero antes de escalar?
+
+El cuaderno queda disponible en tu cuenta de NotebookLM para consulta posterior — las fuentes importadas son accesibles directamente.
+
+**Infraestructura:** Requiere el MCP server `notebooklm-mcp` configurado en `.mcp.json` (ver paso 6 de Install & Config). Sin él, el módulo se marca automáticamente como `skipped` y el framework continúa.
+
+---
+
+### Agente Market Projects — cómo funciona
+
+El agente lee todos los ficheros `.md` disponibles en `research/data/market/` (hasta 20) y los contrasta con la propuesta analizada. Para cada proyecto de referencia evalúa tres dimensiones: si es competidor directo o indirecto, qué hace mejor o peor que la propuesta, y qué vacío deja que la propuesta podría cubrir.
+
+El resultado es un mapa competitivo con competidores directos, competidores indirectos, brechas de mercado identificadas, y una síntesis de dónde hay espacio real para diferenciarse.
+
+**Infraestructura:** Sin dependencias externas — solo lee ficheros locales. Si `data/market/` está vacío, escribe un resultado válido con `confidence: low` y continúa sin bloquear el pipeline. La calidad del análisis depende directamente de cuántos y cuán detallados sean los ficheros que el usuario haya colocado en `data/market/`.
+
+---
+
+### Agente Semantic Scholar — cómo funciona
+
+El agente formula **4 queries** en inglés a partir del `scientific_basis` y los `differentiators` del análisis previo: una por el fundamento central, una por cada diferencial clave, y una por limitaciones conocidas del enfoque.
+
+Para cada query, llama a la **API REST de Semantic Scholar** (`api.semanticscholar.org`) y recupera los 20 papers más relevantes semánticamente. De esos 20, selecciona 4-5 aplicando una estrategia de dos capas diseñada para evitar el sesgo temporal:
+
+- **Papers fundacionales** (más de 2 años): se compara por `citas por año` (`citationCount / edad`), no por citas brutas. Esto evita que papers viejos muy citados eclipsen trabajo reciente equivalente. Se da prioridad especial a reviews y meta-análisis, que son el mejor proxy de consenso de la comunidad.
+- **Papers recientes** (últimos 2 años): se acepta `influentialCitationCount > 0` o `citationCount ≥ 5` como umbral — suficiente señal de validación en un campo donde la antigüedad no ha tenido tiempo de acumularse.
+
+El resultado (~15-20 papers en total) alimenta una síntesis en cuatro dimensiones: validación del fundamento, evidencia sobre los diferenciales, limitaciones conocidas, y nivel de madurez tecnológica (`early-research` / `emerging` / `validated` / `mature`).
+
+**Infraestructura:** La API de Semantic Scholar es gratuita sin autenticación para uso básico (100 req/5 min). No requiere cuenta ni token. Devuelve JSON estructurado — sin scraping HTML.
 
 ---
 

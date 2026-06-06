@@ -99,21 +99,58 @@ synthesis_input:
 
 # Contrato de salida del agente de síntesis
 synthesis_output:
+  rating:
+    type: string
+    enum: [strong_go, conditional_go, no_go]
+    description: >
+      Valoración agregada de la propuesta.
+      "strong_go": evidencia consistente de viabilidad en múltiples dimensiones.
+      "conditional_go": viable con condiciones críticas pendientes de validar.
+      "no_go": evidencia suficientemente sólida en contra del fundamento, mercado o diferenciación.
+  overall_assessment:
+    type: string
+    description: >
+      Evaluación narrativa de 3-5 frases que integra todos los hallazgos en una lectura
+      cohesionada — no un resumen por agente, sino una interpretación unificada.
+  agent_summaries:
+    type: array
+    description: Resumen de la aportación de cada agente que completó su ejecución
+    items:
+      agent_id: string
+      key_finding: string      # hallazgo principal en 1-2 frases
+      stance: string           # supportive | neutral | cautionary
   decision:
     type: string
     enum: [ask_more_info, propose_experiment]
     description: >
-      "ask_more_info" si la investigación revela lagunas críticas que el usuario
-      debe aclarar antes de avanzar. "propose_experiment" si hay suficiente claridad
-      para definir un experimento de validación concreto.
+      "ask_more_info" si hay lagunas críticas que el evaluador debe aclarar antes de experimentar.
+      "propose_experiment" si la evidencia es suficiente para definir al menos un experimento de validación.
   rationale:
     type: string
     description: Razonamiento que justifica la decisión
-  next_steps:
-    type: array
-    description: Preguntas concretas (si ask_more_info) o pasos del experimento (si propose_experiment)
-    items:
-      type: string
   synthesis_notes:
     type: string
-    description: Resumen narrativo de cómo encajan los hallazgos de los distintos módulos
+    description: Convergencias, divergencias y puntos ciegos entre los módulos ejecutados
+  experiments:
+    type: array
+    description: >
+      Lista de experimentos priorizados. Presente solo si decision == "propose_experiment".
+      Orden: (1) reducción de incertidumbre/riesgo; (2) coste como criterio de desempate.
+    items:
+      priority_rank: integer
+      name: string
+      description: string
+      resolves: string            # qué incertidumbre o riesgo específico elimina
+      metrics: string             # cómo se mide el éxito del experimento
+      learning_criticality: string  # por qué este aprendizaje es crítico ahora
+      cost: string                # rough order of magnitude de recursos y tiempo
+  global_experiment_recommendation:
+    type: string
+    description: >
+      Recomendación narrativa sobre cómo proceder con los experimentos en conjunto:
+      orden, paralelismo posible, dependencias. Presente solo si decision == "propose_experiment".
+  next_steps:
+    type: array
+    description: Preguntas concretas a aclarar. Presente solo si decision == "ask_more_info".
+    items:
+      type: string
