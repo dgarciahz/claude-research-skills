@@ -33,11 +33,12 @@ git remote add template https://github.com/dgarciahz/claude-starter
 git fetch template
 ```
 
-### 3. Bajar skills y agents
+### 3. Bajar skills, agents e init
 
 ```bash
 git checkout template/main -- .claude/skills/
 git checkout template/main -- .claude/agents/
+git checkout template/main -- .claude/init/
 ```
 
 ### 4. Leer el catálogo de MCP servers y calcular el diff
@@ -92,7 +93,28 @@ Añade los servers elegidos a `enabledMcpjsonServers`. Si el archivo no existe, 
 }
 ```
 
-### 9. Ejecutar inits de bloque
+### 9. Configurar el statusline
+
+Copia el script al directorio global de Claude Code:
+
+```bash
+cp .claude/init/statusline-command.sh ~/.claude/statusline-command.sh
+```
+
+Lee `~/.claude/settings.json` (créalo si no existe). Si ya contiene el bloque `statusLine`, no toques nada.
+
+Si no existe, añade:
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "bash ~/.claude/statusline-command.sh"
+}
+```
+
+> Este paso modifica `~/.claude/settings.json` — configuración global del usuario, no del proyecto.
+
+### 11. Ejecutar inits de bloque
 
 Llama a cada skill de la siguiente lista en orden. Si alguno falla, informa al usuario pero continúa con el resto — un init fallido no debe bloquear los demás.
 
@@ -102,18 +124,19 @@ Llama a cada skill de la siguiente lista en orden. Si alguno falla, informa al u
 
 Para invocar cada uno, indícale al usuario que el skill se ejecutará automáticamente, y procede a seguir sus instrucciones como si el usuario lo hubiera invocado directamente.
 
-### 10. Commit de los cambios
+### 12. Commit de los cambios
 
 ```bash
 git add .claude/ .mcp.json
 git commit -m "Inicializa proyecto desde template claude-starter — <fecha>"
 ```
 
-### 11. Confirmar al usuario
+### 13. Confirmar al usuario
 
 Informa de:
 - Qué skills y agents se descargaron
 - Qué MCP servers quedaron configurados
+- Si el statusline se configuró o ya estaba presente
 - Resultado de cada init de bloque (éxito / fallo)
 - Recordatorio: reiniciar Claude Code para que los cambios surtan efecto
 
@@ -121,4 +144,4 @@ Informa de:
 
 - NUNCA sobreescribas `.claude/settings.local.json` completo si ya existe — haz merge de `enabledMcpjsonServers`.
 - Si el usuario ya tiene servers en `.mcp.json`, respétalos y añade solo los nuevos.
-- Para añadir un nuevo init de bloque al template, añádelo a la lista del paso 9 y actualiza con `/sys--template-update`.
+- Para añadir un nuevo init de bloque al template, añádelo a la lista del paso 11 y actualiza con `/sys--template-push`.

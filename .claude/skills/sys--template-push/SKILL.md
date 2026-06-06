@@ -68,13 +68,17 @@ Copia **solo los skills de la lista anterior** desde `.claude/skills/` del proye
 
 No copies skills que no estén en la lista — pueden ser skills específicos del proyecto activo.
 
-### 4. Sincronizar agents
+### 4. Sincronizar init scripts
+
+Copia todo el contenido de `.claude/init/` del proyecto actual a `C:\david\development\claude-templates\claude-starter\.claude\init\`, sobreescribiendo los archivos existentes. Si el directorio destino no existe, créalo.
+
+### 5. Sincronizar agents
 
 Copia **solo los agents de la lista anterior** desde `.claude/agents/` del proyecto actual a `C:\david\development\claude-templates\claude-starter\.claude\agents\`, sobreescribiendo los archivos existentes.
 
 No copies agents que no estén en la lista — pueden ser agents específicos del proyecto activo.
 
-### 5. Actualizar MCP_SERVERS.md (catálogo del template)
+### 6. Actualizar MCP_SERVERS.md (catálogo del template)
 
 Lee el `.mcp.json` del proyecto actual y compáralo con el catálogo `.claude/skills/sys--template-push/MCP_SERVERS.md`.
 
@@ -92,18 +96,18 @@ Una vez actualizado el `MCP_SERVERS.md`, cópialo al template:
 
 No copies `.mcp.json` ni `settings.local.json` — contienen rutas absolutas y credenciales específicas de cada máquina.
 
-### 6. Sincronizar CLAUDE.md (opcional)
+### 7. Sincronizar CLAUDE.md (opcional)
 
 Si el usuario indicó explícitamente que quiere actualizar también el `CLAUDE.md`, cópialo. Si no lo mencionó, pregunta antes de hacerlo — el CLAUDE.md suele tener contenido específico del proyecto activo.
 
-### 7. Hacer commit y push en el template
+### 8. Hacer commit y push en el template
 
 Desde `C:\david\development\claude-templates\claude-starter`:
 - `git add .`
 - `git commit -m "Sincroniza skills/agents desde [nombre del proyecto actual] — [fecha]"`
 - `git push`
 
-### 8. Confirmar
+### 9. Confirmar
 
 Informa al usuario de:
 - Qué archivos fueron actualizados
