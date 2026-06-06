@@ -25,6 +25,7 @@ Solo se sincronizan estos skills (lista explícita). El usuario puede tener skil
 
 - `gh--push`
 - `n8n--init`
+- `per--handoff`
 - `per--history`
 - `per--init`
 - `per--session-close`

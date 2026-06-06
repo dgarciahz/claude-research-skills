@@ -60,12 +60,34 @@ Si no existe el bloque, añade al final del archivo:
 
 Sustituye `<CLAUDE_PERSONAL_DIR>` por la ruta real. En Windows usa backslashes (`\`).
 
-### 4. Confirmar
+### 4. Configurar el statusline
+
+Lee `~/.claude/settings.json` (créalo si no existe).
+
+Si ya contiene el bloque `statusLine`, no toques nada.
+
+Si no existe, añade:
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "bash <POSIX_PERSONAL_DIR>/statusline-command.sh"
+}
+```
+
+Donde `<POSIX_PERSONAL_DIR>` es `CLAUDE_PERSONAL_DIR` convertido a ruta POSIX para Git Bash:
+- Windows `C:\foo\bar` → `/c/foo/bar`
+- Ya en formato POSIX → úsala tal cual
+
+El script `statusline-command.sh` ya estará en `CLAUDE_PERSONAL_DIR` (viene del repo de personalización). No copies el script — `settings.json` apunta directamente a él.
+
+### 5. Confirmar
 
 Informa al usuario de:
 - Qué archivos se crearon (o ya existían)
 - Si el bloque se añadió al CLAUDE.md o ya estaba presente
-- Recordatorio: reiniciar Claude Code para que los cambios en CLAUDE.md surtan efecto
+- Si el statusline se configuró o ya estaba presente
+- Recordatorio: reiniciar Claude Code para que los cambios surtan efecto
 
 ## Notas
 
