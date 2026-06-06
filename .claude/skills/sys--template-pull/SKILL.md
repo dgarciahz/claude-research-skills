@@ -36,16 +36,17 @@ git fetch template
 Muestra al usuario un diff resumido de lo que va a cambiar:
 
 ```bash
-git diff HEAD template/main -- .claude/skills/ .claude/agents/
+git diff HEAD template/main -- .claude/skills/ .claude/agents/ .claude/init/
 ```
 
 Si no hay diferencias, informa al usuario y detente — el proyecto ya está al día.
 
-### 4. Bajar skills y agents
+### 4. Bajar skills, agents e init
 
 ```bash
 git checkout template/main -- .claude/skills/
 git checkout template/main -- .claude/agents/
+git checkout template/main -- .claude/init/
 ```
 
 ### 5. Comparar MCP servers del catálogo con el proyecto
@@ -65,8 +66,8 @@ Si no hay diff de MCP servers (o el usuario no quiere ninguno), continúa sin to
 ### 6. Commit de los cambios
 
 ```bash
-git add .claude/skills/ .claude/agents/ .mcp.json
-git commit -m "Sincroniza skills/agents desde template claude-starter — <fecha>"
+git add .claude/skills/ .claude/agents/ .claude/init/ .mcp.json
+git commit -m "Sincroniza skills/agents/init desde template claude-starter — <fecha>"
 ```
 
 ### 7. Confirmar al usuario

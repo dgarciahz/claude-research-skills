@@ -1,55 +1,36 @@
 # Skill: Init Template
 
-Inicializa un proyecto nuevo (o existente) desde el template `claude-starter`: baja skills, agents y asiste al usuario para configurar los MCP servers que necesite.
+Inicializa un proyecto nuevo creado desde el template `claude-starter`: configura MCP servers, statusline e inits de personalización.
 
 ## Trigger
 
-Usar cuando el usuario invoque `/sys--template-init` o pida inicializar/actualizar el proyecto desde el template.
+Usar cuando el usuario invoque `/sys--template-init` o pida inicializar el proyecto.
 
 ## Configuración
 
-- **Repo template**: `https://github.com/dgarciahz/claude-starter`
-- **Remote name**: `template`
-- **Catálogo MCP**: `.claude/skills/sys--template-update/MCP_SERVERS.md` (se descarga junto con los skills)
+- **Catálogo MCP**: `.claude/skills/sys--template-push/MCP_SERVERS.md`
+
+## Prerequisito
+
+El proyecto debe haberse creado desde el template:
+```bash
+gh repo create mi-proyecto --template dgarciahz/claude-starter --private --clone
+```
+Esto ya trae skills, agents e init. Este skill solo inicializa — no descarga nada. Para actualizaciones posteriores del template, usar `/sys--template-pull`.
 
 ## Instrucciones
 
 Sigue estos pasos en orden:
 
-### 1. Verificar o añadir el remote `template`
+### 1. Leer el catálogo de MCP servers y calcular el diff
 
-Comprueba si el remote `template` ya existe:
-```bash
-git remote get-url template
-```
-Si no existe, añádelo:
-```bash
-git remote add template https://github.com/dgarciahz/claude-starter
-```
-
-### 2. Fetch del template
-
-```bash
-git fetch template
-```
-
-### 3. Bajar skills, agents e init
-
-```bash
-git checkout template/main -- .claude/skills/
-git checkout template/main -- .claude/agents/
-git checkout template/main -- .claude/init/
-```
-
-### 4. Leer el catálogo de MCP servers y calcular el diff
-
-Lee el archivo `.claude/skills/sys--template-update/MCP_SERVERS.md` que acaba de descargarse.
+Lee `.claude/skills/sys--template-push/MCP_SERVERS.md`.
 
 Si ya existe un `.mcp.json` en el proyecto, compara los servers del catálogo con los ya configurados. Separa:
 - **Servers nuevos**: están en el catálogo pero no en `.mcp.json` → candidatos a instalar
 - **Servers existentes**: ya configurados → no tocar
 
-### 5. Preguntar al usuario qué servers nuevos quiere configurar
+### 2. Preguntar al usuario qué servers nuevos quiere configurar
 
 Muestra solo los servers que no están aún en el proyecto. Pregunta cuáles quiere añadir usando `AskUserQuestion` con multiSelect.
 
@@ -57,12 +38,12 @@ Si es un proyecto completamente nuevo (sin `.mcp.json`), ofrece todos los del ca
 
 Para los servers elegidos que requieren credenciales (`N8N_API_URL`, `N8N_API_KEY`, etc.), solicítalas al usuario en este paso.
 
-### 6. Detectar la ruta de npx según el SO
+### 3. Detectar la ruta de npx según el SO
 
 - **Windows**: comprueba si existe `C:\Program Files\nodejs\npx.cmd`. Si no, busca con `where npx`.
 - **macOS / Linux**: usa simplemente `npx`.
 
-### 7. Escribir `.mcp.json`
+### 4. Escribir `.mcp.json`
 
 Construye el archivo `.mcp.json` en la raíz del proyecto con los servers elegidos. Ejemplo de estructura:
 
@@ -82,7 +63,7 @@ Construye el archivo `.mcp.json` en la raíz del proyecto con los servers elegid
 
 Si ya existe un `.mcp.json`, combina los servers nuevos con los existentes (no sobreescribas los que ya estén configurados).
 
-### 8. Actualizar `.claude/settings.local.json`
+### 5. Actualizar `.claude/settings.local.json`
 
 Añade los servers elegidos a `enabledMcpjsonServers`. Si el archivo no existe, créalo con esta estructura mínima:
 
@@ -93,7 +74,7 @@ Añade los servers elegidos a `enabledMcpjsonServers`. Si el archivo no existe, 
 }
 ```
 
-### 9. Configurar el statusline
+### 6. Configurar el statusline
 
 Copia el script al directorio global de Claude Code:
 
@@ -114,7 +95,7 @@ Si no existe, añade:
 
 > Este paso modifica `~/.claude/settings.json` — configuración global del usuario, no del proyecto.
 
-### 11. Ejecutar inits de bloque
+### 7. Ejecutar inits de bloque
 
 Llama a cada skill de la siguiente lista en orden. Si alguno falla, informa al usuario pero continúa con el resto — un init fallido no debe bloquear los demás.
 
@@ -124,17 +105,16 @@ Llama a cada skill de la siguiente lista en orden. Si alguno falla, informa al u
 
 Para invocar cada uno, indícale al usuario que el skill se ejecutará automáticamente, y procede a seguir sus instrucciones como si el usuario lo hubiera invocado directamente.
 
-### 12. Commit de los cambios
+### 8. Commit de los cambios
 
 ```bash
 git add .claude/ .mcp.json
 git commit -m "Inicializa proyecto desde template claude-starter — <fecha>"
 ```
 
-### 13. Confirmar al usuario
+### 9. Confirmar al usuario
 
 Informa de:
-- Qué skills y agents se descargaron
 - Qué MCP servers quedaron configurados
 - Si el statusline se configuró o ya estaba presente
 - Resultado de cada init de bloque (éxito / fallo)
@@ -144,4 +124,4 @@ Informa de:
 
 - NUNCA sobreescribas `.claude/settings.local.json` completo si ya existe — haz merge de `enabledMcpjsonServers`.
 - Si el usuario ya tiene servers en `.mcp.json`, respétalos y añade solo los nuevos.
-- Para añadir un nuevo init de bloque al template, añádelo a la lista del paso 11 y actualiza con `/sys--template-push`.
+- Para añadir un nuevo init de bloque al template, añádelo a la lista del paso 7 y actualiza con `/sys--template-push`.
