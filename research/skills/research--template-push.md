@@ -1,13 +1,12 @@
 # Research Framework — Template Push
 
-Cuando el usuario diga "research push", "contribuye mejoras al framework" o similar, ejecuta este flujo para proponer cambios en el core del framework al repositorio de origen via PR.
+Cuando el usuario diga "research push", "sube los cambios al framework" o similar, ejecuta este flujo para commitear y subir cambios del core directamente a `main`.
 
 ## Cuándo activar
 
 - "research push"
-- "contribuye cambios al framework"
-- "propón mejoras al research framework"
-- "abre un PR en el framework"
+- "sube los cambios al framework"
+- "actualiza el repo del framework"
 
 ## Flujo
 
@@ -23,42 +22,28 @@ Comprueba qué ficheros del core han cambiado respecto al último commit:
 git diff HEAD -- research/agents/ research/assets/ research/config/ research/skills/ research/market/ research/RESEARCH.md research/INIT.md research/README.md
 ```
 
-Si no hay cambios en el core, informa: "No hay cambios en el framework core para proponer." y termina.
+Si no hay cambios en el core, informa: "No hay cambios en el framework core para subir." y termina.
 
 Muestra al usuario la lista de ficheros modificados y pide confirmación antes de continuar.
 
-### Paso 3 — Crear una rama con los cambios
+### Paso 3 — Commitear y subir a main
 
-Crea una rama descriptiva con los cambios del core:
+Stagea y commitea solo los ficheros del core:
 
 ```bash
-git checkout -b research-improvement/<descripción-breve>
 git add research/agents/ research/assets/ research/config/ research/skills/ research/market/ research/RESEARCH.md research/INIT.md research/README.md
 git commit -m "feat(research): <descripción del cambio>"
-git push origin research-improvement/<descripción-breve>
+git push origin main
 ```
 
 Los ficheros locales del usuario (`data/projects/`, `wip/`, `state/`) no se incluyen en ningún caso. `market/` sí se incluye — es core del framework.
 
-### Paso 4 — Abrir el PR
+### Paso 4 — Confirmar
 
-Usa `gh pr create` para abrir un PR hacia el repo de origen:
-
-```bash
-gh pr create \
-  --repo <upstream_url_sin_.git> \
-  --head <usuario>:research-improvement/<descripción-breve> \
-  --title "feat(research): <descripción>" \
-  --body "<descripción detallada de los cambios>"
-```
-
-### Paso 5 — Confirmar
-
-Muestra al usuario la URL del PR creado. El admin del framework decidirá en GitHub si aceptar, pedir cambios o rechazar la propuesta.
+Muestra al usuario un resumen de los ficheros subidos.
 
 ## Notas
 
-- Este skill nunca modifica `research/data/`, `research/wip/` ni `research/state/`. Sí incluye `research/market/` en el PR.
+- Este skill nunca modifica `research/data/`, `research/wip/` ni `research/state/`. Sí incluye `research/market/` en el push.
 - Este skill nunca modifica los remotes git del repo del usuario.
-- El PR se abre hacia el repo de origen definido en `research/config/config.yaml` bajo `source`.
-- Requiere `gh` (GitHub CLI) autenticado en el entorno del usuario.
+- El repo de origen está definido en `research/config/config.yaml` bajo `source`.
