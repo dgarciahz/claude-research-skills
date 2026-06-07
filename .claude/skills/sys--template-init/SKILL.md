@@ -79,7 +79,7 @@ Añade los servers elegidos a `enabledMcpjsonServers`. Si el archivo no existe, 
 Copia el script al directorio global de Claude Code:
 
 ```bash
-cp .claude/init/statusline-command.sh ~/.claude/statusline-command.sh
+cp .claude/assets/statusline-command.sh ~/.claude/statusline-command.sh
 ```
 
 Lee `~/.claude/settings.json` (créalo si no existe). Si ya contiene el bloque `statusLine`, no toques nada.
@@ -95,7 +95,28 @@ Si no existe, añade:
 
 > Este paso modifica `~/.claude/settings.json` — configuración global del usuario, no del proyecto.
 
-### 7. Ejecutar inits de bloque
+### 7. Instalar output styles
+
+Copia los output styles de `.claude/assets/` al directorio global. Los output styles son los `.md` que tienen frontmatter con `name:` en `.claude/assets/`.
+
+```bash
+mkdir -p ~/.claude/output-styles/
+cp .claude/assets/caveman.md ~/.claude/output-styles/caveman.md
+```
+
+Después pregunta al usuario con `AskUserQuestion` qué output style quiere activar para este proyecto. Muestra los estilos disponibles leyendo el frontmatter `name:` de los `.md` de `.claude/assets/`. Incluye siempre la opción "Ninguno".
+
+Para el estilo elegido (si no es "Ninguno"), escribe `outputStyle` en `.claude/settings.local.json`:
+
+```json
+{
+  "outputStyle": "<nombre del estilo>"
+}
+```
+
+Si el archivo ya existe, añade/actualiza solo esa clave — no sobreescribas el resto.
+
+### 8. Ejecutar inits de bloque
 
 Llama a cada skill de la siguiente lista en orden. Si alguno falla, informa al usuario pero continúa con el resto — un init fallido no debe bloquear los demás.
 
@@ -104,14 +125,14 @@ Llama a cada skill de la siguiente lista en orden. Si alguno falla, informa al u
 
 Para invocar cada uno, indícale al usuario que el skill se ejecutará automáticamente, y procede a seguir sus instrucciones como si el usuario lo hubiera invocado directamente.
 
-### 8. Commit de los cambios
+### 9. Commit de los cambios
 
 ```bash
 git add .claude/ .mcp.json
 git commit -m "Inicializa proyecto desde template claude-starter — <fecha>"
 ```
 
-### 9. Confirmar al usuario
+### 10. Confirmar al usuario
 
 Informa de:
 - Qué MCP servers quedaron configurados
@@ -123,4 +144,4 @@ Informa de:
 
 - NUNCA sobreescribas `.claude/settings.local.json` completo si ya existe — haz merge de `enabledMcpjsonServers`.
 - Si el usuario ya tiene servers en `.mcp.json`, respétalos y añade solo los nuevos.
-- Para añadir un nuevo init de bloque al template, añádelo a la lista del paso 7 y actualiza con `/sys--template-push`.
+- Para añadir un nuevo init de bloque al template, añádelo a la lista del paso 8 y actualiza con `/sys--template-push`.

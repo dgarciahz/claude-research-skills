@@ -15,7 +15,7 @@ Usar cuando el usuario invoque `/sys--template-push` o pida sincronizar / propag
 
 Solo se sincronizan estos agents (lista explícita). El usuario puede tener agents propios en el proyecto que NO deben subirse al template:
 
-- `test-architect.md`
+_(ninguno por ahora)_
 
 Si el usuario pide añadir o quitar un agent de esta lista, actualiza el SKILL.md antes de continuar.
 
@@ -67,9 +67,9 @@ Copia **solo los skills de la lista anterior** desde `.claude/skills/` del proye
 
 No copies skills que no estén en la lista — pueden ser skills específicos del proyecto activo.
 
-### 4. Sincronizar init scripts
+### 4. Sincronizar assets
 
-Copia todo el contenido de `.claude/init/` del proyecto actual a `C:\david\development\claude-templates\claude-starter\.claude\init\`, sobreescribiendo los archivos existentes. Si el directorio destino no existe, créalo.
+Copia todo el contenido de `.claude/assets/` del proyecto actual a `C:\david\development\claude-templates\claude-starter\.claude\assets\`, sobreescribiendo los archivos existentes. Si el directorio destino no existe, créalo.
 
 ### 5. Sincronizar agents
 

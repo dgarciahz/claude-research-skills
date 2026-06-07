@@ -42,11 +42,11 @@ Si alguno no existe, créalo con el contenido mínimo de plantilla:
 **learnings.md**: cabecera explicativa + vacío.
 **history/**: directorio vacío.
 
-### 3. Añadir bloque PERSONALIZATION al CLAUDE.md del proyecto
+### 3. Añadir o actualizar bloque PERSONALIZATION en el CLAUDE.md del proyecto
 
 Lee el `CLAUDE.md` del directorio de trabajo actual.
 
-Si ya contiene `<!-- PERSONALIZATION:START -->`, informa al usuario y no toques nada.
+Si ya contiene `<!-- PERSONALIZATION:START -->`, **reemplaza el bloque completo** (desde `<!-- PERSONALIZATION:START -->` hasta `<!-- PERSONALIZATION:END -->`) con el contenido actualizado. Esto asegura que las rutas apunten al directorio real del usuario, incluso si el CLAUDE.md venía del template con rutas distintas.
 
 Si no existe el bloque, añade al final del archivo:
 
@@ -64,7 +64,7 @@ Sustituye `<CLAUDE_PERSONAL_DIR>` por la ruta real. En Windows usa backslashes (
 
 Informa al usuario de:
 - Qué archivos se crearon (o ya existían)
-- Si el bloque se añadió al CLAUDE.md o ya estaba presente
+- Si el bloque se añadió al CLAUDE.md o se actualizó (rutas reescritas)
 - Recordatorio: reiniciar Claude Code para que los cambios en CLAUDE.md surtan efecto
 
 ## Notas
