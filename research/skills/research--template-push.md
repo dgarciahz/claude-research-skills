@@ -20,7 +20,7 @@ Lee `research/config/config.yaml` y extrae `source.upstream_url`.
 Comprueba qué ficheros del core han cambiado respecto al último commit:
 
 ```bash
-git diff HEAD -- research/agents/ research/config/ research/skills/ research/RESEARCH.md research/INIT.md research/README.md
+git diff HEAD -- research/agents/ research/assets/ research/config/ research/skills/ research/market/ research/RESEARCH.md research/INIT.md research/README.md
 ```
 
 Si no hay cambios en el core, informa: "No hay cambios en el framework core para proponer." y termina.
@@ -33,12 +33,12 @@ Crea una rama descriptiva con los cambios del core:
 
 ```bash
 git checkout -b research-improvement/<descripción-breve>
-git add research/agents/ research/config/ research/skills/ research/RESEARCH.md research/INIT.md research/README.md
+git add research/agents/ research/assets/ research/config/ research/skills/ research/market/ research/RESEARCH.md research/INIT.md research/README.md
 git commit -m "feat(research): <descripción del cambio>"
 git push origin research-improvement/<descripción-breve>
 ```
 
-Los ficheros de datos del usuario (`data/market/`, `data/projects/`, `wip/`, `state/`) no se incluyen en ningún caso.
+Los ficheros locales del usuario (`data/projects/`, `wip/`, `state/`) no se incluyen en ningún caso. `market/` sí se incluye — es core del framework.
 
 ### Paso 4 — Abrir el PR
 
@@ -58,7 +58,7 @@ Muestra al usuario la URL del PR creado. El admin del framework decidirá en Git
 
 ## Notas
 
-- Este skill nunca modifica `research/data/`, `research/wip/` ni `research/state/`.
+- Este skill nunca modifica `research/data/`, `research/wip/` ni `research/state/`. Sí incluye `research/market/` en el PR.
 - Este skill nunca modifica los remotes git del repo del usuario.
 - El PR se abre hacia el repo de origen definido en `research/config/config.yaml` bajo `source`.
 - Requiere `gh` (GitHub CLI) autenticado en el entorno del usuario.

@@ -37,7 +37,7 @@ Deriva `wip_dir = research/wip/{project_name}/`.
 >
 > ¿Qué módulos quieres regenerar? Escribe los nombres separados por comas, o deja en blanco para reutilizarlos todos."
 
-Espera la respuesta. Los módulos que el usuario quiera reutilizar (y tienen JSON en `wip_dir`): léelos directamente (no lances el agente) y aplica igualmente la lógica de early exit del Paso 4.
+Espera la respuesta. Los módulos que el usuario quiera reutilizar (y tienen JSON en `wip_dir`): léelos directamente sin lanzar el agente.
 
 **Después**, lanza el agente `agents/analysis.md` via `Agent tool` (a menos que el usuario haya indicado reutilizar el analysis existente). En el prompt incluye:
 - El contenido de `research/agents/analysis.md` como instrucciones base
@@ -70,35 +70,32 @@ Lista los módulos disponibles al usuario (en orden de ejecución según `config
 
 > "Tengo disponibles los siguientes módulos de research:
 > 1. **NotebookLM** — consulta tus cuadernos de Google NotebookLM
-> 2. **Market Projects** — analiza los proyectos de referencia en `data/market/`
+> 2. **Market Projects** — analiza los proyectos de referencia en `market/`
 > 3. **Semantic Scholar** — valida el fundamento científico contra literatura peer-reviewed
 >
 > ¿Quieres ejecutarlos todos, o prefieres omitir alguno?"
 
 Espera la respuesta del usuario antes de continuar:
-- Si dice "todos" o equivalente → ejecuta los tres en orden
+- Si dice "todos" o equivalente → lánzalos en paralelo
 - Si indica módulos a omitir → regístralos en `state/{project_name}.json` con `status: skipped`. No escribas ningún fichero en `wip/`.
 - Si no responde nada concreto → ejecuta todos por defecto
 
-## Paso 4 — Ejecutar agentes en orden
+## Paso 4 — Ejecutar agentes en paralelo
 
-Para cada agente seleccionado (en orden ascendente por `order`):
+Lanza **todos los agentes seleccionados simultáneamente** usando el `Agent tool` — una llamada por agente en el mismo paso, sin esperar a que uno termine para lanzar el siguiente.
 
-1. Lanza el agente via `Agent tool`. En el prompt incluye:
-   - El contenido del fichero del agente (`agents/{id}.md`) como instrucciones base
-   - El input del usuario: `project_name`, `description`
-   - El `proposal_summary` y los campos estructurados de `{wip_dir}/analysis.json` (fundamento técnico, diferenciales, casos de uso) — usa el `proposal_summary` como referencia de la propuesta en lugar del texto completo original si este era extenso
-   - La ruta `wip_dir` donde debe escribir su output
+Para cada agente, incluye en el prompt:
+- El contenido del fichero del agente (`agents/{id}.md`) como instrucciones base
+- Los campos de `{wip_dir}/analysis.json`: `project_name`, `proposal_summary`, `scientific_basis`, `differentiators`
+- La ruta `wip_dir` donde debe escribir su output
 
-2. Espera a que el agente termine:
-   - Si completó con resultado: su JSON estará en `{wip_dir}/{id}.json`. Actualiza `research/state/{project_name}.json` con `status: completed` y el mensaje del agente.
-   - Si skipped o error: el agente no habrá escrito ningún fichero. Actualiza `research/state/{project_name}.json` con `status: skipped` o `status: error` y el mensaje recibido.
+Espera a que **todos** los agentes terminen antes de continuar.
 
-3. Evalúa la condición de early exit (solo si el agente completó con resultado):
-   - Si `confidence == "high"` Y `recommendation == "stop"` → no lances más agentes, ve directamente al Paso 5.
-   - En cualquier otro caso → lanza el siguiente agente.
+Para cada agente que completó: su JSON estará en `{wip_dir}/{id}.json`. Actualiza `research/state/{project_name}.json` con `status: completed`.
 
-4. Informa brevemente al usuario tras cada agente: "Módulo [nombre] completado/omitido. [1 frase con el hallazgo principal o el motivo del skip]."
+Para cada agente con skip o error: no habrá fichero en `wip/`. Actualiza `research/state/{project_name}.json` con `status: skipped` o `status: error` y el mensaje recibido.
+
+Informa al usuario del resultado de todos los módulos de una vez: "[módulo] completado — [hallazgo en 1 frase]. [módulo] omitido — [motivo]."
 
 ## Paso 5 — Síntesis
 

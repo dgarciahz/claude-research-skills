@@ -48,7 +48,7 @@ La descripción puede ser breve (unas líneas) o un documento completo. Si tiene
 
 ## Install & Config
 
-### 1. Clonar el template
+### Opción A — Repo standalone
 
 Clona el repositorio o usa **"Use this template"** en GitHub para crear tu propio repo:
 
@@ -56,7 +56,22 @@ Clona el repositorio o usa **"Use this template"** en GitHub para crear tu propi
 git clone https://github.com/local_dgarciahz/claude-research-skills.git
 ```
 
-Todos los resultados de research (`data/projects/`) y los datos de referencia que añadas (`data/market/`) son locales y están gitignoreados — no se suben al repositorio.
+Los resultados de research (`data/projects/`) son locales y gitignoreados. Los ficheros de referencia competitiva (`market/`) están versionados en el repo y se sincronizan con `research pull` / `research push`.
+
+### Opción B — Integrar en proyecto existente (claude-starter)
+
+Si ya tienes un proyecto creado desde `claude-starter` y quieres añadir research:
+
+```bash
+# Añadir el remote de research (una vez)
+git remote add research https://github.com/local_dgarciahz/claude-research-skills.git
+
+# Fetch y copiar SOLO el directorio research/
+git fetch research
+git checkout research/main -- research/
+```
+
+**Importante**: copiar solo `research/`. No copiar `.mcp.json` ni `.claude/settings.local.json` — esos ficheros son del proyecto destino. El paso siguiente (INIT.md) hace el merge de lo que research necesita en esos ficheros sin tocar la configuración existente.
 
 ### 2. Inicializar
 
@@ -76,14 +91,14 @@ Necesario para que el `@filepath` cargue en el contexto de sistema.
 
 ### 4. Añadir datos de referencia (opcional)
 
-Coloca ficheros `.md` con descripciones de proyectos del mercado en `research/data/market/`. El agente `market-projects` los leerá para el análisis competitivo. Sin ellos, ese módulo informará que no hay datos y seguirá adelante.
+Coloca ficheros `.md` con descripciones de proyectos del mercado en `research/market/`. El agente `market-projects` los leerá para el análisis competitivo. Sin ellos, ese módulo informará que no hay datos y seguirá adelante.
 
 ### 5. Directorios de datos
 
 El directorio `research/data/` es completamente gitignoreado. INIT.md lo crea con tres subdirectorios:
 
 - `data/in/` — coloca aquí los documentos de propuesta a analizar
-- `data/market/` — ficheros `.md` de referencia competitiva para el agente Market Projects
+- `market/` — ficheros `.md` de referencia competitiva para el agente Market Projects (versionado en el repo)
 - `data/projects/` — resultados generados automáticamente (informes de research)
 
 ### 6. Actualizar el framework (cuando haya nuevas versiones)
@@ -138,9 +153,9 @@ research/
 ├── config/              ← configuración del framework
 │   ├── config.yaml      ← pipeline de agentes, settings y repo de origen
 │   └── io-schema.yaml   ← contrato de entrada/salida de todos los agentes
+├── market/              ← ficheros .md de referencia competitiva (versionado en el repo)
 ├── data/
 │   ├── in/              ← documentos de propuesta a analizar (gitignored, local)
-│   ├── market/          ← tus ficheros .md de referencia competitiva (gitignored, local)
 │   └── projects/        ← tus resultados de research (gitignored, local)
 ├── wip/
 │   └── {project_name}/  ← JSONs de resultados reales (solo agentes con status: completed, gitignored)
@@ -215,9 +230,9 @@ Define el esquema de entrada y salida que todos los agentes deben respetar. Es l
 
 ---
 
-### `data/market/` — Datos de referencia
+### `market/` — Datos de referencia competitiva
 
-Ficheros `.md` que describen proyectos existentes en el mercado. Los añade el usuario manualmente. El agente `market-projects` los lee y los contrasta con el proyecto analizado. Formato libre; cuanto más estructurado, mejor el análisis.
+Ficheros `.md` que describen proyectos existentes en el mercado. Están versionados en el repo y se sincronizan con `research pull` / `research push`. El agente `market-projects` los lee y contrasta con el proyecto analizado. Formato libre; cuanto más estructurado, mejor el análisis.
 
 ### `data/projects/` — Resultados acumulados
 
@@ -263,11 +278,11 @@ El cuaderno queda disponible en tu cuenta de NotebookLM para consulta posterior 
 
 ### Agente Market Projects — cómo funciona
 
-El agente lee todos los ficheros `.md` disponibles en `research/data/market/` (hasta 20) y los contrasta con la propuesta analizada. Para cada proyecto de referencia evalúa tres dimensiones: si es competidor directo o indirecto, qué hace mejor o peor que la propuesta, y qué vacío deja que la propuesta podría cubrir.
+El agente lee todos los ficheros `.md` disponibles en `research/market/` (hasta 20) y los contrasta con la propuesta analizada. Para cada proyecto de referencia evalúa tres dimensiones: si es competidor directo o indirecto, qué hace mejor o peor que la propuesta, y qué vacío deja que la propuesta podría cubrir.
 
 El resultado es un mapa competitivo con competidores directos, competidores indirectos, brechas de mercado identificadas, y una síntesis de dónde hay espacio real para diferenciarse.
 
-**Infraestructura:** Sin dependencias externas — solo lee ficheros locales. Si `data/market/` está vacío, escribe un resultado válido con `confidence: low` y continúa sin bloquear el pipeline. La calidad del análisis depende directamente de cuántos y cuán detallados sean los ficheros que el usuario haya colocado en `data/market/`.
+**Infraestructura:** Sin dependencias externas — solo lee ficheros locales. Si `market/` está vacío, escribe un resultado válido con `confidence: low` y continúa sin bloquear el pipeline. La calidad del análisis depende directamente de cuántos y cuán detallados sean los ficheros que el usuario haya colocado en `market/`.
 
 ---
 

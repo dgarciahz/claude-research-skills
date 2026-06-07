@@ -40,7 +40,7 @@ workflow:
 settings:
   paths:
     input_dir: data/in
-    market_data_dir: data/market
+    market_data_dir: market
     projects_output_dir: data/projects
     wip_dir: wip
     state_dir: state

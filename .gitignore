@@ -8,8 +8,11 @@ CLAUDE.md
 Thumbs.db
 
 # Datos de usuario del Research Framework (locales, no se versionan)
+# Los subdirectorios los crea INIT.md en cada proyecto nuevo
 research/data/
 
 # Temporales del Research Framework
-research/wip/
-research/state/
+research/wip/**
+!research/wip/.gitkeep
+research/state/**
+!research/state/.gitkeep
