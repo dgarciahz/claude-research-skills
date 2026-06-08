@@ -19,11 +19,12 @@ El contexto de tu invocación incluirá:
 - La ruta `wip_dir` donde están los JSONs de cada agente ejecutado
 - La fecha actual en formato YYYY.MM.DD
 
-## Paso 1 — Cargar resultados disponibles
+## Paso 1 — Cargar y validar resultados disponibles
 
 1. Lista todos los ficheros `.json` en `{wip_dir}` con Glob. Ignora `synthesis.json` si existe.
 2. Lee cada JSON con Read.
-3. Toma nota de qué agentes completaron (`status: completed`) y cuáles fueron omitidos o fallaron.
+3. Para cada JSON con `status: completed`, verifica que contiene exactamente estos campos en el nivel raíz: `agent_id`, `status`, `summary`, `evidence`, `confidence`, `recommendation`, `findings`. Si un JSON tiene campos extra o le falta algún campo obligatorio, regístralo como anomalía en tus notas — no detengas el framework, pero refleja la anomalía en `synthesis_notes` y reduce la confianza en ese agente.
+4. Toma nota de qué agentes completaron y cuáles fueron omitidos o fallaron.
 
 ## Paso 2 — Análisis cruzado
 
@@ -75,6 +76,8 @@ Además, escribe un **`global_experiment_recommendation`**: un párrafo que expl
 ## Output que debes producir
 
 **Regla de siglas**: en cualquier parte del informe que redactes, la primera vez que uses una sigla (p.ej. MVP, TAM, B2B, API, ROI, SaaS…) escríbela seguida de su descripción entre paréntesis. Ejemplo: `MVP (Minimum Viable Product)`, `TAM (Total Addressable Market)`. Las apariciones siguientes de esa misma sigla pueden ir sin paréntesis.
+
+Antes de escribir, verifica que el JSON contiene exactamente estos campos en el nivel raíz: `rating`, `overall_assessment`, `agent_summaries`, `decision`, `rationale`, `synthesis_notes`. Campos condicionales: `experiments` y `global_experiment_recommendation` solo si `decision == "propose_experiment"`; `next_steps` solo si `decision == "ask_more_info"`. No añadas campos adicionales.
 
 ### 1. JSON en `{wip_dir}/synthesis.json`
 
