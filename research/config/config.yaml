@@ -49,5 +49,5 @@ settings:
 
 # Repositorio de origen (para research--template-pull y research--template-push)
 source:
-  upstream_url: https://github.com/local_dgarciahz/claude-research-skills.git
+  upstream_url: https://github.com/dgarciahz/claude-research-skills.git
   upstream_branch: main
