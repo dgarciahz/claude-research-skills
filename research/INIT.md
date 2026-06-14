@@ -17,7 +17,7 @@ Si estás añadiendo research a un proyecto ya creado desde `claude-starter`, el
 
 ```bash
 # 1. Añadir el remote de research (una vez)
-git remote add research https://github.com/local_dgarciahz/claude-research-skills.git
+git remote add research https://github.com/dgarciahz/claude-research-skills.git
 
 # 2. Fetch y copiar SOLO el directorio research/
 git fetch research
@@ -37,7 +37,7 @@ git checkout research/main -- research/
 
 Comprueba que existe el directorio `research/` en la raíz del proyecto actual con los subdirectorios esperados (`config/`, `agents/`, `data/`, `wip/`, `state/`).
 
-- Si no existe → informa al usuario: "El directorio `research/` no está presente. Clona el template desde GitHub: `git clone https://github.com/local_dgarciahz/claude-research-skills.git`"
+- Si no existe → informa al usuario: "El directorio `research/` no está presente. Clona el template desde GitHub: `git clone https://github.com/dgarciahz/claude-research-skills.git`"
 - Si existe → continúa.
 
 ### Paso 2 — Verificar que no está ya inicializado
