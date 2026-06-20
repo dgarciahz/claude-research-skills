@@ -152,7 +152,8 @@ research/
 ├── agents/              ← un .md por agente (llamados via Agent tool)
 ├── config/              ← configuración del framework
 │   ├── config.yaml      ← pipeline de agentes, settings y repo de origen
-│   └── io-schema.yaml   ← contrato de entrada/salida de todos los agentes
+│   ├── io-schema.yaml   ← contrato de entrada/salida de todos los agentes
+│   └── version          ← hash del último push; los consumidores lo comparan al activar el framework
 ├── market/              ← ficheros .md de referencia competitiva (versionado en el repo)
 ├── data/
 │   ├── in/              ← documentos de propuesta a analizar (gitignored, local)

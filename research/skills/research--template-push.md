@@ -26,6 +26,23 @@ Si no hay cambios en el core, informa: "No hay cambios en el framework core para
 
 Muestra al usuario la lista de ficheros modificados y pide confirmación antes de continuar.
 
+### Paso 2b — Verificar si README.md necesita actualización
+
+Si `research/README.md` ya está en el diff del Paso 2 (el usuario ya lo modificó), salta este paso.
+
+Si no está en el diff, analiza los ficheros cambiados y determina si alguno afecta lo documentado en README.md:
+
+| Cambio detectado | Sección de README afectada |
+|---|---|
+| Nuevo/eliminado fichero en `agents/` | Tabla de agentes en `## Agents` |
+| Cambio en descripción de agente existente | Fila correspondiente en tabla de agentes |
+| Nuevo/eliminado fichero en `skills/` | Diagrama de estructura en `## Deep Dive` |
+| Cambios en `config/config.yaml` que afecten al pipeline | Sección `config/config.yaml — Configuración del framework` |
+| Cambios en `INIT.md` que afecten al proceso de instalación | Sección `## Install & Config` |
+
+- Si no hay impacto: informa "README.md no requiere cambios." y continúa al Paso 3.
+- Si hay impacto: lee `research/README.md`, aplica las actualizaciones necesarias e informa al usuario qué secciones se modificaron. README.md se incluirá en el commit del Paso 3.
+
 ### Paso 3 — Commitear y subir a main
 
 Stagea y commitea solo los ficheros del core:
@@ -37,6 +54,20 @@ git push origin main
 ```
 
 Los ficheros locales del usuario (`data/projects/`, `wip/`, `state/`) no se incluyen en ningún caso. `market/` sí se incluye — es core del framework.
+
+### Paso 3b — Actualizar versión del framework
+
+Tras el push del Paso 3, obtén el hash del commit recién subido y actualiza `research/config/version`:
+
+```bash
+FRAMEWORK_HASH=$(git rev-parse HEAD)
+echo $FRAMEWORK_HASH > research/config/version
+git add research/config/version
+git commit -m "chore: actualiza versión del framework — $FRAMEWORK_HASH"
+git push origin main
+```
+
+Este hash es el identificador de versión que los proyectos consumidores comparan al activar el framework.
 
 ### Paso 4 — Confirmar
 
