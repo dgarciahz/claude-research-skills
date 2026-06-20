@@ -83,7 +83,10 @@ Dile a Claude en ese proyecto:
 
 Claude ejecutará los pasos de inicialización automáticamente:
 - Añadir `@research/RESEARCH.md` al `CLAUDE.md` del proyecto (bloque `<!-- RESEARCH:START/END -->`)
-- Añadir `research/wip/` y `research/state/` al `.gitignore`
+- Crear directorios de datos locales (`data/in/`, `data/projects/`, `wip/`, `state/`)
+- Añadir `research/data/`, `research/wip/` y `research/state/` al `.gitignore`
+- Registrar el hook `SessionStart` en `.claude/settings.json` para chequeo de versión al inicio de sesión
+- Configurar el MCP server de NotebookLM en `.mcp.json` (opcional, pregunta antes)
 
 ### 3. Reiniciar Claude Code
 
@@ -103,11 +106,11 @@ El directorio `research/data/` es completamente gitignoreado. INIT.md lo crea co
 
 ### 6. Actualizar el framework (cuando haya nuevas versiones)
 
-Pide a Claude: `"research pull"`. El framework actualiza solo el core (agents/, config/, skills/, RESEARCH.md) sin tocar tus datos ni resultados.
+Pide a Claude: `"research pull"`. El framework actualiza solo el core (agents/, assets/, config/, skills/, RESEARCH.md) sin tocar tus datos ni resultados.
 
-Para proponer mejoras al framework: `"research push"`. Se abre un PR en el repositorio de origen.
+Para proponer mejoras al framework: `"research push"`. Se commitea y sube directamente a `main`.
 
-### 6. Configurar NotebookLM (opcional)
+### 7. Configurar NotebookLM (opcional)
 
 El agente `notebooklm` requiere el MCP server de NotebookLM configurado en `.mcp.json`. Si no está disponible, el módulo se marca automáticamente como `skipped` y el framework continúa.
 
@@ -150,6 +153,8 @@ research/
 │   ├── research--template-pull.md   ← actualizar framework core desde upstream
 │   └── research--template-push.md   ← proponer mejoras via PR
 ├── agents/              ← un .md por agente (llamados via Agent tool)
+├── assets/              ← scripts y recursos del framework
+│   └── version-check.sh ← hook SessionStart: avisa si hay versión más nueva
 ├── config/              ← configuración del framework
 │   ├── config.yaml      ← pipeline de agentes, settings y repo de origen
 │   ├── io-schema.yaml   ← contrato de entrada/salida de todos los agentes

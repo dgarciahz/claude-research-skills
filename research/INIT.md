@@ -93,20 +93,42 @@ research/wip/
 research/state/
 ```
 
-### Paso 6 — Merge de configuración MCP (notebooklm)
+### Paso 6 — Registrar hook de versión en settings.json
+
+El framework incluye un hook `SessionStart` que comprueba al inicio de cada sesión si hay una versión más nueva disponible en el repo de origen.
+
+Lee `.claude/settings.json` (si no existe, tratarlo como `{}`). Comprueba si ya existe una entrada en `hooks.SessionStart[].hooks[]` con `"command": "bash research/assets/version-check.sh"`.
+
+- **Sí existe** → omitir.
+- **No existe** → añadir al array `hooks.SessionStart[]` la siguiente entrada, preservando todas las entradas existentes:
+
+```json
+{
+  "hooks": [
+    {
+      "type": "command",
+      "command": "bash research/assets/version-check.sh"
+    }
+  ]
+}
+```
+
+Escribir `.claude/settings.json` resultante.
+
+### Paso 7 — Merge de configuración MCP (notebooklm)
 
 Lee `research/assets/MCP_SERVERS.md` para entender los requisitos del server notebooklm.
 
-**6.1 — Comprobar si ya está configurado**
+**7.1 — Comprobar si ya está configurado**
 
 Lee `.mcp.json` del proyecto raíz (si no existe, tratar como `{}`). Comprueba si existe la clave `mcpServers.notebooklm`:
 
-- **Sí existe** → saltar al paso 6.4 (solo merge de permisos).
+- **Sí existe** → saltar al paso 7.4 (solo merge de permisos).
 - **No existe** → preguntar al usuario: *"El agente NotebookLM requiere el MCP server `notebooklm-mcp` configurado en `.mcp.json`. ¿Quieres configurarlo ahora?"*
-  - **No** → informar: *"Sin problema. El módulo notebooklm se marcará automáticamente como `skipped` y el framework continuará con los demás módulos. Puedes configurarlo más adelante ejecutando `research/INIT.md` de nuevo."* Saltar al Paso 7.
-  - **Sí** → continuar al paso 6.2.
+  - **No** → informar: *"Sin problema. El módulo notebooklm se marcará automáticamente como `skipped` y el framework continuará con los demás módulos. Puedes configurarlo más adelante ejecutando `research/INIT.md` de nuevo."* Saltar al Paso 8.
+  - **Sí** → continuar al paso 7.2.
 
-**6.2 — Detectar rutas automáticamente**
+**7.2 — Detectar rutas automáticamente**
 
 Ejecuta los siguientes comandos para detectar las rutas del sistema:
 
@@ -119,7 +141,7 @@ Ejecuta los siguientes comandos para detectar las rutas del sistema:
   - `python -c "import certifi; print(certifi.where())"`
   - Si falla: pedir al usuario la ruta del archivo `.pem`.
 
-**6.3 — Añadir notebooklm a `.mcp.json`**
+**7.3 — Añadir notebooklm a `.mcp.json`**
 
 Merge del bloque notebooklm en `.mcp.json`, preservando todos los servers existentes (playwright, context7, n8n-mcp, etc.):
 
@@ -134,7 +156,7 @@ Merge del bloque notebooklm en `.mcp.json`, preservando todos los servers existe
 
 Escribir el `.mcp.json` resultante.
 
-**6.4 — Merge de permisos en `settings.local.json`**
+**7.4 — Merge de permisos en `settings.local.json`**
 
 Lee `research/assets/permissions.md` para obtener la lista de permisos.
 
@@ -144,16 +166,16 @@ Para cada entrada de `research/assets/permissions.md`:
 - Si ya está en `permissions.allow[]` → omitir.
 - Si no está → añadirla al array.
 
-Si el usuario eligió configurar notebooklm (paso 6.1 respondió Sí):
+Si el usuario eligió configurar notebooklm (paso 7.1 respondió Sí):
 - Añadir `"notebooklm"` a `enabledMcpjsonServers[]` si no está ya.
 
 Escribir `.claude/settings.local.json` actualizado.
 
-**6.5 — Confirmar**
+**7.5 — Confirmar**
 
 Si se configuró notebooklm: informar al usuario que ejecute `nlm login` antes del primer uso para autenticarse con su cuenta Google.
 
-### Paso 7 — Confirmar instalación
+### Paso 8 — Confirmar instalación
 
 Muestra al usuario un resumen adaptado a lo que se ejecutó:
 
@@ -173,6 +195,7 @@ Directorios creados (gitignored, solo locales):
 
   research/market/        → referencia competitiva (versionado en el repo)
 
+settings.json — hook SessionStart (version-check): [añadido | ya existía]
 .mcp.json — notebooklm: [configurado | ya existía | saltado]
 settings.local.json — permisos notebooklm: [añadidos | ya existían | saltados]
 

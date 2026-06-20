@@ -12,19 +12,6 @@ Activa el framework cuando el usuario diga cosas como:
 
 No actives el framework para preguntas puntuales de mercado o búsquedas ad hoc — solo cuando el usuario quiera un análisis estructurado de un proyecto concreto.
 
-## Paso 0 — Verificar versión del framework
-
-Ejecuta este paso una sola vez por sesión, la primera vez que el framework se activa.
-
-1. Usa `WebFetch` para obtener `https://raw.githubusercontent.com/dgarciahz/claude-research-skills/main/research/config/version`
-2. Lee `research/config/version` local con la herramienta Read
-3. Compara:
-   - **Iguales** → continúa al Paso 1 sin avisar
-   - **Diferentes** → muestra al usuario:
-     > "Hay una nueva versión del framework disponible (local: `{hash_local}` | upstream: `{hash_upstream}`). Se recomienda ejecutar `research pull` antes de continuar. ¿Continuar con la versión actual de todos modos?"
-     Espera respuesta. Si el usuario quiere actualizar primero, detente aquí. Si quiere continuar → continúa al Paso 1.
-   - **Fetch falla** (sin red u otro error) → continúa al Paso 1 sin avisar
-
 ## Paso 1 — Recoger el input
 
 Antes de lanzar ningún agente, asegúrate de tener:
