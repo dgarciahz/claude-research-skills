@@ -17,5 +17,5 @@ if [ -z "$remote_hash" ]; then
 fi
 
 if [ "$local_hash" != "$remote_hash" ]; then
-  printf '{"systemMessage": "Nueva versión del framework de research disponible (local: %s | upstream: %s). Ejecuta research pull para actualizar."}' "${local_hash:0:8}" "${remote_hash:0:8}"
+  echo "Nueva versión del framework de research disponible (local: ${local_hash:0:8} | upstream: ${remote_hash:0:8}). Ejecuta research pull para actualizar."
 fi
