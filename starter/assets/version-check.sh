@@ -8,7 +8,10 @@ if [ -z "$local_hash" ]; then
   exit 0
 fi
 
-remote_hash=$(curl -sf --max-time 3 "https://raw.githubusercontent.com/dgarciahz/claude-starter/main/starter/config/version" | tr -d '[:space:]')
+remote_hash=$(curl -sf --max-time 5 --ssl-no-revoke \
+  -H "Accept: application/vnd.github.raw+json" \
+  "https://api.github.com/repos/dgarciahz/claude-starter/contents/starter/config/version" \
+  | tr -d '[:space:]')
 
 if [ -z "$remote_hash" ]; then
   exit 0
