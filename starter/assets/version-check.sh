@@ -17,6 +17,8 @@ if [ -z "$remote_hash" ]; then
   exit 0
 fi
 
-if [ "$local_hash" != "$remote_hash" ]; then
-  echo "Nueva versión de claude-starter disponible (local: ${local_hash:0:8} | upstream: ${remote_hash:0:8}). Ejecuta /sys--template-pull y re-ejecuta starter/INIT.md."
+if [ "$local_hash" = "$remote_hash" ]; then
+  printf '{"systemMessage": "✓ starter framework — up to date (%s)"}\n' "$local_hash"
+else
+  printf '{"systemMessage": "✗ starter framework DESACTUALIZADO (local: %s | upstream: %s) — ejecuta: /sys--template-pull"}\n' "$local_hash" "$remote_hash"
 fi

@@ -22,6 +22,7 @@ permissions:
   - "Bash(curl *)"
   - "WebFetch(domain:docs.anthropic.com)"
   - "WebFetch(domain:docs.claude.ai)"
+  - "WebFetch(domain:pypi.org)"
 
 env:
   CLAUDE_PERSONAL_DIR: ""   # INIT.md pregunta al usuario si está vacío
