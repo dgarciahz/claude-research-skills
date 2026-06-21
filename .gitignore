@@ -1,8 +1,6 @@
 # Configuración local de Claude Code y entorno de desarrollo (específicos del entorno local)
 .claude/
 starter/
-CLAUDE.md
-.mcp.json
 
 
 # Archivos de sistema

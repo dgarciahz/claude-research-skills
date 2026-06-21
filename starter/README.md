@@ -31,15 +31,15 @@ starter/
 
 | Skill | Descripción |
 |-------|-------------|
-| `/gh--pull` | Pull desde GitHub |
-| `/gh--push` | Commit y push a GitHub con mensaje automático |
-| `/per--handoff` | Prepara handoff de sesión al contexto siguiente |
-| `/per--history` | Gestiona historial de sesiones |
-| `/per--learn` | Registra un aprendizaje en el sistema de personalización |
-| `/per--session-close` | Cierra la sesión y guarda contexto |
-| `/sys--context-report` | Muestra el estado del contexto actual |
-| `/sys--template-pull` | Actualiza skills y framework desde el template |
-| `/sys--template-push` | Propaga mejoras de skills al template |
+| `/gh--pull` | Sincroniza la rama local con el remote (git pull) |
+| `/gh--push` | Commit y push a GitHub con mensaje de commit generado automáticamente |
+| `/per--handoff` | Crea o recupera un documento de handoff para retomar trabajo en la próxima sesión |
+| `/per--history` | Lee el historial de sesiones y presenta un resumen ponderado por antigüedad |
+| `/per--learn` | Añade aprendizajes a `learnings.md` en `CLAUDE_PERSONAL_DIR` |
+| `/per--session-close` | Genera un resumen de la sesión y lo guarda en el historial persistente |
+| `/sys--context-report` | Regenera `project-tools.html` con información actualizada de MCP servers y skills |
+| `/sys--template-pull` | Actualiza skills y framework del proyecto desde el template `claude-starter` |
+| `/sys--template-push` | Propaga mejoras de skills desde el proyecto al template `claude-starter` |
 
 ## Actualizar el framework
 
