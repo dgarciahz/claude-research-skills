@@ -101,26 +101,24 @@ Lee `.claude/settings.local.json` (si no existe, tratar como `{}`).
 
 Escribe `.claude/settings.local.json` actualizado. Si el fichero ya existía, haz merge — no sobrescribas completo.
 
-**5.4 — Hook de versión**: lee `.claude/settings.json` (si no existe, tratar como `{}`). Comprueba si ya hay una entrada en `hooks.UserPromptSubmit` con el comando `bash starter/assets/version-check.sh`. Si no existe, añade:
+**5.4 — Hook de versión**: lee `.claude/settings.json` (si no existe, tratar como `{}`).
+
+**Migración**: si en `hooks.UserPromptSubmit` existe una entrada cuyo único hook tiene `"command": "bash starter/assets/version-check.sh"`, elimínala del array. Si el array `UserPromptSubmit` queda vacío tras la eliminación, elimina también la clave.
+
+**Instalación**: comprueba si en `hooks.SessionStart` ya existe alguna entrada con `"command": "bash starter/assets/version-check.sh"`. Si no existe, **añade** (append) al array `hooks.SessionStart` la siguiente entrada sin tocar las entradas existentes:
 
 ```json
 {
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash starter/assets/version-check.sh"
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": [
+    {
+      "type": "command",
+      "command": "bash starter/assets/version-check.sh"
+    }
+  ]
 }
 ```
 
-Haz merge con el contenido existente preservando otras claves. Escribe `.claude/settings.json`.
+Haz merge con el contenido existente preservando todas las demás claves y entradas de hooks. Escribe `.claude/settings.json`.
 
 ### Paso 6 — Configurar statusline
 

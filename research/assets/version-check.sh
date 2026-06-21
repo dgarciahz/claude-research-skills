@@ -7,8 +7,9 @@ if [ -z "$local_hash" ]; then
   exit 0
 fi
 
-remote_hash=$(curl -sf --max-time 3 "https://raw.githubusercontent.com/dgarciahz/claude-research-skills/main/research/config/version" 2>/dev/null | tr -d '[:space:]')
+remote_hash=$(curl -sf --max-time 3 --ssl-no-revoke "https://raw.githubusercontent.com/dgarciahz/claude-research-skills/main/research/config/version" | tr -d '[:space:]')
 if [ -z "$remote_hash" ]; then
+  printf '{"systemMessage": "research version-check: no se pudo contactar upstream (¿red o SSL?). Verifica manualmente con: research pull"}'
   exit 0
 fi
 

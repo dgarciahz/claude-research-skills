@@ -23,7 +23,8 @@ starter/
 └── assets/
     ├── config.yaml       ← configuración declarativa (MCP servers, permisos, output styles)
     ├── caveman.md        ← output style minimalista
-    └── statusline-command.sh  ← script de statusline para Claude Code
+    ├── statusline-command.sh  ← script de statusline para Claude Code
+    └── version-check.sh  ← comprueba versión del template al arranque
 ```
 
 ## Skills disponibles (tras inicializar)

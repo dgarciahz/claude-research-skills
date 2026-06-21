@@ -1,13 +1,7 @@
 #!/bin/bash
-# Comprueba una vez por sesión si hay una versión más nueva de claude-starter disponible.
-# Ejecutado via hook UserPromptSubmit — sale en silencio si ya se comprobó hace menos de 4 horas.
+# Version check de claude-starter. Hook: SessionStart.
 
-MARKER="$HOME/.claude/.starter-version-check"
 LOCAL="starter/config/version"
-
-if [ -f "$MARKER" ] && [ -n "$(find "$MARKER" -mmin -240 2>/dev/null)" ]; then
-  exit 0
-fi
 
 local_hash=$(cat "$LOCAL" 2>/dev/null | tr -d '[:space:]')
 if [ -z "$local_hash" ]; then
@@ -15,8 +9,6 @@ if [ -z "$local_hash" ]; then
 fi
 
 remote_hash=$(curl -sf --max-time 3 "https://raw.githubusercontent.com/dgarciahz/claude-starter/main/starter/config/version" | tr -d '[:space:]')
-
-touch "$MARKER"
 
 if [ -z "$remote_hash" ]; then
   exit 0
