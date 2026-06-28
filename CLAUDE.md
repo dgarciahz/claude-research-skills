@@ -18,6 +18,7 @@ Si el contexto incluye mensajes de version-check (starter framework o research f
 @C:\david\development\claude\claude-personalization\user.md
 @C:\david\development\claude\claude-personalization\learnings.md
 @C:\david\development\claude\claude-personalization\learnings\_index.md
+@C:\david\development\claude\claude-personalization\IT_stacks\_index_stacks.md
 <!-- PERSONALIZATION:END -->
 
 <!-- RESEARCH:START -->

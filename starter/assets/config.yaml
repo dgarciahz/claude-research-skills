@@ -28,7 +28,7 @@ env:
   CLAUDE_PERSONAL_DIR: ""   # INIT.md pregunta al usuario si está vacío
 
 safety:
-  destructive_op_guard: ~   # null = INIT.md pregunta al usuario | true = hook activo | false = hook inactivo
+  destructive_op_guard: true   # null = INIT.md pregunta al usuario | true = hook activo | false = hook inactivo
 
 output_styles:
   - file: "caveman.md"
