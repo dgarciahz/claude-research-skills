@@ -56,7 +56,7 @@ Clona el repositorio o usa **"Use this template"** en GitHub para crear tu propi
 git clone https://github.com/local_dgarciahz/claude-research-skills.git
 ```
 
-Los resultados de research (`data/projects/`) son locales y gitignoreados. Los ficheros de referencia competitiva (`market/`) están versionados en el repo y se sincronizan con `research pull` / `research push`.
+Los resultados de research (`data/projects/`) son locales y gitignoreados. Los ficheros de referencia competitiva (`market/`) están versionados en el repo y se sincronizan con `/sys--template-pull research` / `/sys--template-push research`.
 
 ### Opción B — Integrar en proyecto existente (claude-starter)
 
@@ -106,9 +106,11 @@ El directorio `research/data/` es completamente gitignoreado. INIT.md lo crea co
 
 ### 6. Actualizar el framework (cuando haya nuevas versiones)
 
-Pide a Claude: `"research pull"`. El framework actualiza solo el core (agents/, assets/, config/, skills/, RESEARCH.md) sin tocar tus datos ni resultados.
+Ejecuta `/sys--template-pull research`. Actualiza solo lo que declara `research/config/manifest.yaml` y el directorio `research/`, sin tocar tus datos ni resultados.
 
-Para proponer mejoras al framework: `"research push"`. Se commitea y sube directamente a `main`.
+Para proponer mejoras al framework: `/sys--template-push research`.
+
+Research usa el mismo mecanismo de sincronización que el resto de frameworks (`sys--template-*`, que vienen de starter). Es deliberado: un único mecanismo evita frameworks divergentes y reduce el coste de mantenimiento.
 
 ### 7. Configurar NotebookLM (opcional)
 
@@ -149,14 +151,12 @@ research/
 ├── RESEARCH.md          ← orquestador cargado via @filepath en CLAUDE.md
 ├── INIT.md              ← instalador one-shot (ejecutar una vez por proyecto)
 ├── README.md            ← esta guía
-├── skills/              ← skill-like files cargados via @filepath
-│   ├── research--template-pull.md   ← actualizar framework core desde upstream
-│   └── research--template-push.md   ← proponer mejoras via PR
 ├── agents/              ← un .md por agente (llamados via Agent tool)
 ├── assets/              ← scripts y recursos del framework
 │   └── version-check.sh ← hook SessionStart: avisa si hay versión más nueva
 ├── config/              ← configuración del framework
-│   ├── config.yaml      ← pipeline de agentes, settings y repo de origen
+│   ├── config.yaml      ← pipeline de agentes y settings
+│   ├── manifest.yaml    ← repo de origen y skills/agents que forman parte del framework
 │   ├── io-schema.yaml   ← contrato de entrada/salida de todos los agentes
 │   └── version          ← hash del último push; los consumidores lo comparan al activar el framework
 ├── market/              ← ficheros .md de referencia competitiva (versionado en el repo)
@@ -184,7 +184,7 @@ Un único fichero con tres secciones diferenciadas:
 
 - **`workflow`**: pipeline de agentes (qué corre, en qué orden, condiciones de early exit, formato de output)
 - **`settings`**: rutas internas y límites operativos
-- **`source`**: URL del repo de origen (usado por `research--template-pull` y `research--template-push`)
+- **`manifest.yaml`** (fichero aparte): `repo` de origen, `skills` y `agents` del framework; lo leen `/sys--template-pull` y `/sys--template-push`
 
 Para añadir un nuevo agente: añade una entrada en `workflow.research_agents` con el `id`, `file` y `order` correspondiente.
 
@@ -238,7 +238,7 @@ Define el esquema de entrada y salida que todos los agentes deben respetar. Es l
 
 ### `market/` — Datos de referencia competitiva
 
-Ficheros `.md` que describen proyectos existentes en el mercado. Están versionados en el repo y se sincronizan con `research pull` / `research push`. El agente `market-projects` los lee y contrasta con el proyecto analizado. Formato libre; cuanto más estructurado, mejor el análisis.
+Ficheros `.md` que describen proyectos existentes en el mercado. Están versionados en el repo y se sincronizan con `/sys--template-pull research` / `/sys--template-push research`. El agente `market-projects` los lee y contrasta con el proyecto analizado. Formato libre; cuanto más estructurado, mejor el análisis.
 
 ### `data/projects/` — Resultados acumulados
 

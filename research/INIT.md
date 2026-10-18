@@ -40,12 +40,12 @@ Comprueba que existe el directorio `research/` en la raíz del proyecto actual c
 - Si no existe → informa al usuario: "El directorio `research/` no está presente. Clona el template desde GitHub: `git clone https://github.com/dgarciahz/claude-research-skills.git`"
 - Si existe → continúa.
 
-### Paso 2 — Verificar que no está ya inicializado
+### Paso 2 — Verificar si CLAUDE.md ya tiene el bloque RESEARCH
 
 Busca el bloque `<!-- RESEARCH:START -->` en el fichero `CLAUDE.md` de la raíz del proyecto.
 
-- Si ya existe → informa al usuario: "El Research Framework ya está inicializado en este proyecto (bloque RESEARCH encontrado en CLAUDE.md)." y detente.
-- Si no existe → continúa.
+- Si ya existe → informa al usuario: "El bloque RESEARCH ya existe en CLAUDE.md — saltando Paso 3." Continúa desde el Paso 4.
+- Si no existe → continúa al Paso 3.
 
 ### Paso 3 — Añadir @filepath al CLAUDE.md
 
@@ -56,21 +56,19 @@ Añade el siguiente bloque al **final** del fichero:
 ```
 <!-- RESEARCH:START -->
 @research/RESEARCH.md
-@research/skills/research--template-pull.md
-@research/skills/research--template-push.md
 <!-- RESEARCH:END -->
 ```
 
 ### Paso 4 — Crear directorios de datos y temporales
 
-Estos directorios son locales y gitignoreados — no se incluyen en el repo ni se sincronizan con `research pull`. Debes crearlos explícitamente usando la herramienta Write para escribir un fichero `.gitkeep` vacío en cada ruta (esto crea el directorio automáticamente si no existe):
+Estos directorios son locales y gitignoreados — no se incluyen en el repo ni se sincronizan con `/sys--template-pull research`. Debes crearlos explícitamente usando la herramienta Write para escribir un fichero `.gitkeep` vacío en cada ruta (esto crea el directorio automáticamente si no existe):
 
 - `research/data/in/.gitkeep` — documentos de propuesta a analizar
 - `research/data/projects/.gitkeep` — informes de research generados automáticamente
 - `research/wip/.gitkeep` — JSONs de resultados por agente (temporales de ejecución)
 - `research/state/.gitkeep` — traza completa de ejecución por proyecto
 
-`research/market/` no se crea aquí — viene versionado en el repo del framework (core) y se sincroniza con `research pull`.
+`research/market/` no se crea aquí — viene versionado en el repo del framework (core) y se sincroniza con `/sys--template-pull research`.
 
 Si algún directorio ya existe, omítelo.
 
@@ -184,8 +182,6 @@ Research Framework inicializado correctamente.
 
 CLAUDE.md — añadido:
   @research/RESEARCH.md
-  @research/skills/research--template-pull.md
-  @research/skills/research--template-push.md
 
 Directorios creados (gitignored, solo locales):
   research/data/in/       → documentos de propuesta a analizar
@@ -206,8 +202,8 @@ Próximos pasos:
   4. Pide a Claude: "analiza este proyecto: [descripción]"
 
 Comandos disponibles (tras reiniciar):
-  "research pull"  → actualiza el framework core desde el repo de origen
-  "research push"  → propone mejoras al framework via PR
+  /sys--template-pull research  → actualiza el framework desde el repo de origen
+  /sys--template-push research  → sube mejoras del framework al repo de origen
 ```
 
 ---

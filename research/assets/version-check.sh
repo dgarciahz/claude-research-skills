@@ -12,12 +12,12 @@ remote_hash=$(curl -sf --max-time 5 --ssl-no-revoke \
   "https://api.github.com/repos/dgarciahz/claude-research-skills/contents/research/config/version" \
   | tr -d '[:space:]')
 if [ -z "$remote_hash" ]; then
-  printf '{"systemMessage": "research version-check: no se pudo contactar upstream. Verifica con: research pull"}\n'
+  printf '{"systemMessage": "research version-check: no se pudo contactar upstream. Verifica con: /sys--template-pull research"}\n'
   exit 0
 fi
 
 if [ "$local_hash" = "$remote_hash" ]; then
   printf '{"systemMessage": "✓ research framework — up to date (%s)"}\n' "$local_hash"
 else
-  printf '{"systemMessage": "✗ research framework DESACTUALIZADO (local: %s | upstream: %s) — ejecuta: research pull"}\n' "$local_hash" "$remote_hash"
+  printf '{"systemMessage": "✗ research framework DESACTUALIZADO (local: %s | upstream: %s) — ejecuta: /sys--template-pull research"}\n' "$local_hash" "$remote_hash"
 fi
