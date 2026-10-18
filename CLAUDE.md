@@ -20,6 +20,4 @@ Si el contexto incluye mensajes de version-check (starter framework o research f
 
 <!-- RESEARCH:START -->
 @research/RESEARCH.md
-@research/skills/research--template-pull.md
-@research/skills/research--template-push.md
 <!-- RESEARCH:END -->
