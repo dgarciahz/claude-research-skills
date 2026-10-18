@@ -21,3 +21,9 @@ Si el contexto incluye mensajes de version-check (starter framework o research f
 <!-- RESEARCH:START -->
 @research/RESEARCH.md
 <!-- RESEARCH:END -->
+
+<!-- ARCHITECT:START — no eliminar este bloque -->
+@architect/assets/learnings/learnings.md
+@architect/assets/learnings/_index.md
+@architect/assets/IT_stacks/_index_stacks.md
+<!-- ARCHITECT:END -->
