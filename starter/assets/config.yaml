@@ -7,9 +7,6 @@ mcp_servers:
   context7:
     package: "@upstash/context7-mcp@latest"
     description: "Documentación actualizada de librerías en contexto de Claude"
-  notebooklm:
-    package: "notebooklm-mcp (pip install notebooklm-mcp)"
-    description: "Acceso a NotebookLM para research, consultas conversacionales y síntesis de documentos"
 
 permissions:
   - "Bash(git *)"
@@ -28,7 +25,7 @@ env:
   CLAUDE_PERSONAL_DIR: ""   # INIT.md pregunta al usuario si está vacío
 
 safety:
-  destructive_op_guard: true   # null = INIT.md pregunta al usuario | true = hook activo | false = hook inactivo
+  destructive_op_guard: ~   # null = INIT.md pregunta al usuario | true = hook activo | false = hook inactivo
 
 output_styles:
   - file: "caveman.md"

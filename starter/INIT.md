@@ -37,7 +37,7 @@ git remote get-url origin
 Busca `.gitignore` en la raíz del proyecto. Si no existe, créalo.
 
 1. **Elimina** las líneas `CLAUDE.md` y `.mcp.json` del `.gitignore` **si están presentes** — en proyectos derivados estos ficheros deben quedar trackeados en git.
-2. **Añade** `.claude/settings.local.json` **solo si no está ya presente**.
+2. **Añade** `.claude/settings.local.json` y `.claude/settings.json` **solo si no están ya presentes**. `settings.json` es propio de cada proyecto: starter solo le añade sus hooks (pasos 5.4 y 5.5) y no lo versiona. Si el proyecto ya lo tiene trackeado, no ejecutes `git rm --cached`; es decisión suya.
 
 ### Paso 3 — Crear o actualizar CLAUDE.md
 
@@ -212,46 +212,9 @@ Lee `CLAUDE_PERSONAL_DIR` desde `env.CLAUDE_PERSONAL_DIR` en `.claude/settings.l
 <!-- Tono y estilo preferido. -->
 ```
 
-- `$CLAUDE_PERSONAL_DIR/learnings.md`:
+Para crear el directorio `history/` si no existe, escribe un fichero `.gitkeep` vacío dentro.
 
-```markdown
-# Learnings
-
-Observaciones y aprendizajes acumulados sobre preferencias y patrones del usuario.
-```
-
-- `$CLAUDE_PERSONAL_DIR/learnings/_index.md`:
-
-```markdown
-# Learnings — Índice de Ficheros Temáticos
-
-Catálogo de ficheros de aprendizaje por temática. Actualizar al crear un nuevo fichero en `learnings/`.
-
-| Fichero | Temas | Cuándo cargar |
-|---------|-------|---------------|
-| (vacío — añadir entradas con /per--learn) | | |
-
-**Instrucción de carga automática**: Cuando detectes que la sesión trata alguno de los temas de la tabla, usa la herramienta `Read` para cargar ese fichero antes de responder por primera vez. Informa al usuario: "He cargado learnings/<fichero>.md para esta sesión."
-```
-
-Para crear los directorios `learnings/` y `history/` si no existen, escribe un fichero `.gitkeep` vacío dentro de cada uno (esto crea el directorio automáticamente).
-
-- `$CLAUDE_PERSONAL_DIR/IT_stacks/_index_stacks.md`:
-
-```markdown
-# IT Stacks — Índice de Ficheros
-
-Catálogo de stack docs por plataforma/entorno. Actualizar al crear un nuevo fichero en `IT_stacks/`.
-
-| Fichero | Plataformas / herramientas | Cuándo cargar |
-|---------|---------------------------|---------------|
-
-**Instrucción de carga automática**: cuando la sesión trate setup o configuración de alguna de las plataformas de la tabla, usa `Read` para cargar el stack file antes de responder por primera vez. Informa: "He cargado IT_stacks/<fichero>.md para esta sesión."
-
-**Para añadir o actualizar entradas**: usa el pseudo-skill `starter/skills/per--stack.md`. Gestiona deduplicación y evita contradicciones.
-```
-
-Para crear el directorio `IT_stacks/` si no existe, escribe un fichero `.gitkeep` vacío dentro.
+Los learnings y los stack docs (`learnings.md`, `learnings/`, `IT_stacks/`) ya no viven aquí: los aporta el Architect Framework en `architect/assets/`.
 
 **8.2 — Bloque PERSONALIZATION en CLAUDE.md**: lee el `CLAUDE.md` del directorio de trabajo actual. Comprueba si ya contiene `<!-- PERSONALIZATION:START -->`.
 - Si existe: reemplaza el bloque completo (desde `<!-- PERSONALIZATION:START -->` hasta `<!-- PERSONALIZATION:END -->`).
@@ -263,9 +226,6 @@ Contenido del bloque (sustituye `<CLAUDE_PERSONAL_DIR>` por la ruta real; en Win
 <!-- PERSONALIZATION:START — no eliminar este bloque -->
 @<CLAUDE_PERSONAL_DIR>/soul.md
 @<CLAUDE_PERSONAL_DIR>/user.md
-@<CLAUDE_PERSONAL_DIR>/learnings.md
-@<CLAUDE_PERSONAL_DIR>/learnings/_index.md
-@<CLAUDE_PERSONAL_DIR>/IT_stacks/_index_stacks.md
 <!-- PERSONALIZATION:END -->
 ```
 
@@ -274,7 +234,7 @@ Contenido del bloque (sustituye `<CLAUDE_PERSONAL_DIR>` por la ruta real; en Win
 **Modo derivado**: `CLAUDE.md` y `.mcp.json` ya están des-gitignoreados por el paso 2, así que pueden añadirse normalmente.
 
 ```bash
-git add .mcp.json CLAUDE.md .gitignore .claude/settings.local.json .claude/settings.json
+git add .mcp.json CLAUDE.md .gitignore .claude/settings.local.json
 git commit -m "Inicializa proyecto desde starter framework — <fecha>"
 ```
 
@@ -297,5 +257,5 @@ Informa de:
 ## Notas
 
 - Re-ejecutar INIT.md aplica cambios del template sin perder configuración existente.
-- NUNCA sobreescribe soul.md, user.md, learnings.md ni learnings/_index.md si ya existen.
+- NUNCA sobreescribe soul.md ni user.md si ya existen.
 - Para desinstalar: elimina los bloques `STARTER` y `PERSONALIZATION` de CLAUDE.md, borra `.claude/` y `.mcp.json`.

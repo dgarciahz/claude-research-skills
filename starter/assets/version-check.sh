@@ -20,5 +20,5 @@ fi
 if [ "$local_hash" = "$remote_hash" ]; then
   printf '{"systemMessage": "✓ starter framework — up to date (%s)"}\n' "$local_hash"
 else
-  printf '{"systemMessage": "✗ starter framework DESACTUALIZADO (local: %s | upstream: %s) — ejecuta: /sys--template-pull"}\n' "$local_hash" "$remote_hash"
+  printf '{"systemMessage": "✗ starter framework DESACTUALIZADO (local: %s | upstream: %s) — ejecuta: /sys--template-pull starter"}\n' "$local_hash" "$remote_hash"
 fi

@@ -1,138 +1,158 @@
 # Skill: Template Push
 
-Sincroniza los skills y assets del proyecto actual al repositorio template `claude-starter`, para que los próximos proyectos partan de la versión más reciente.
+Propaga al repo de un framework (`<fw>`) los skills, agents y ficheros del directorio `<fw>/` del proyecto actual, para que los próximos proyectos partan de la versión más reciente.
 
-Este skill siempre opera sobre el repositorio actual — no hay modo remoto ni worktrees. Si necesitas propagar cambios al template, hazlos directamente en `claude-starter`.
+Uso: `/sys--template-push <fw> [skill]`. Ejemplo: `/sys--template-push starter`.
 
 ## Trigger
 
-Usar cuando el usuario invoque `/sys--template-push` o pida sincronizar / propagar cambios al template.
+Usar cuando el usuario invoque `/sys--template-push <fw>` o pida sincronizar / propagar cambios a un template.
 
-## Configuración
+## Convención de framework
 
-- **Repo remoto del template**: `https://github.com/dgarciahz/claude-starter`
+Todo framework `<fw>` tiene la misma estructura dentro del proyecto:
 
-## Agents incluidos en el template
+```
+<fw>/
+  config/manifest.yaml   # repo, skills, agents
+  config/version         # hash del último push
+  assets/config.yaml     # catálogo de MCP servers y permisos
+  README.md              # tabla de skills del framework
+  INIT.md
+```
 
-Solo se sincronizan estos agents (lista explícita). El usuario puede tener agents propios en el proyecto que NO deben subirse al template:
+`<fw>/config/manifest.yaml` es la única fuente de verdad del scope y la leen también `sys--template-pull` y este skill:
 
-_(ninguno por ahora)_
+```yaml
+repo: https://github.com/<owner>/<repo>
+skills:
+  - <skill1>
+agents: []
+```
 
-Si el usuario pide añadir o quitar un agent de esta lista, actualiza el SKILL.md antes de continuar.
+Un skill o agent pertenece a un único framework. Si el usuario pide añadir o quitar uno, edita el manifest antes de continuar — no añadas listas en prosa aquí.
 
-## Pseudo-skills incluidos en el template
-
-Los ficheros en `starter/skills/` son pseudo-skills del framework: no están registrados en `.claude/skills/` y no necesitan lista explícita. Se sincronizan automáticamente como parte de `starter/` en los pasos de push (`git add starter/`) y pull (`git checkout template/main -- starter/`).
-
-Pseudo-skills actuales:
-- `starter/skills/per--handoff.md` — crea/recupera documentos de handoff entre sesiones
-- `starter/skills/per--stack.md` — gestión de IT Stack Docs
-- `starter/skills/sys--context-report.md` — regenera `project-tools.html` con MCP servers y skills
-
-## Skills incluidos en el template
-
-Solo se sincronizan estos skills (lista explícita). El usuario puede tener skills propios en el proyecto que NO deben subirse al template:
-
-- `gh--pull`
-- `gh--push`
-- `per--history`
-- `per--session-close`
-- `per--learn`
-- `sys--template-pull`
-- `sys--template-push`
-
-Si el usuario pide añadir o quitar un skill de esta lista, actualiza el SKILL.md antes de continuar.
+Los ficheros en `<fw>/skills/` son pseudo-skills del framework: no están en `.claude/skills/` y no necesitan lista explícita; viajan con `<fw>/`.
 
 ## Instrucciones
 
 Sigue estos pasos en orden:
 
-### 1. Commit de cambios pendientes
+### 1. Resolver el framework
 
-Antes de sincronizar, asegúrate de que no hay cambios sin commitear en `.claude/skills/` o `starter/`. Ejecuta:
+El primer argumento es `<fw>`. Si falta, pídelo y detente.
+
+Comprueba que existe `<fw>/config/manifest.yaml`. Si no existe, informa de que `<fw>` no cumple la convención y detente. Léelo: de él salen `repo`, `skills` y `agents`.
+
+Si el usuario pasó un segundo argumento (nombre de un skill), limita los pasos 4 y 5 a ese skill más `<fw>/` y dilo antes de continuar.
+
+### 2. Commit de cambios pendientes
 
 ```bash
 git status --short
 ```
 
-Si hay cambios pendientes en `.claude/skills/` o `starter/`, haz commit automáticamente:
+Si hay cambios pendientes en las rutas del manifest o en `<fw>/`, haz commit automáticamente añadiendo solo esas rutas:
 
 ```bash
-git add .claude/skills/ starter/
-git commit -m "Prepara skills/assets para sincronización con template — <fecha>"
+git add .claude/skills/<skill1> .claude/skills/<skill2> ... .claude/agents/<agent1> ... <fw>/
+git commit -m "Prepara skills/assets para sincronización con template <fw> — <fecha>"
 ```
 
-Si hay cambios en otros archivos fuera de estos directorios, infórmaselo al usuario pero no los incluyas en el commit — son responsabilidad suya.
+No uses `git add .claude/` a secas — se llevaría cualquier skill/agent/config ajeno al framework. Si hay cambios fuera de esas rutas, informa al usuario pero no los incluyas.
 
-### 2. Sincronizar starter/assets/config.yaml
+### 3. Sincronizar `<fw>/assets/config.yaml`
 
-Lee `.mcp.json` del proyecto actual y compáralo con `starter/assets/config.yaml#mcp_servers`.
+Si `<fw>/assets/config.yaml` no existe (framework sin MCP ni permisos propios, ej. `architect`), omite este paso.
 
-**2.1 — MCP servers nuevos**: si hay servers en el proyecto que no están en el catálogo del config, pregunta al usuario:
-> "Estos servers están en tu proyecto pero no en el config del template: [lista]. ¿Los añado?"
+Lee `.mcp.json` del proyecto y compáralo con `<fw>/assets/config.yaml#mcp_servers`.
 
-Para cada server aprobado, añade una entrada a `config.yaml#mcp_servers` con:
-- Nombre del server
-- Paquete npx
-- Descripción de uso
+**3.1 — MCP servers nuevos**: si hay servers en el proyecto que no están en el catálogo, pregunta:
+> "Estos servers están en tu proyecto pero no en el config de <fw>: [lista]. ¿Los añado?"
 
-**2.2 — Permisos nuevos**: compara `settings.local.json#permissions.allow` del proyecto con `config.yaml#permissions`. Si hay permisos en el proyecto que no están en el config, pregunta al usuario:
-> "Estos permisos están en tu proyecto pero no en el config del template: [lista]. ¿Los añado?"
+Para cada uno aprobado, añade a `config.yaml#mcp_servers`: nombre, paquete npx y descripción de uso.
+
+**3.2 — Permisos nuevos**: compara `settings.local.json#permissions.allow` con `config.yaml#permissions`. Si hay permisos que no están en el config, pregunta:
+> "Estos permisos están en tu proyecto pero no en el config de <fw>: [lista]. ¿Los añado?"
 
 Añade los aprobados a `config.yaml#permissions`.
 
-No copies `.mcp.json`, `settings.local.json`, ni `CLAUDE.md` — son propios de cada proyecto.
+No copies `.mcp.json`, `settings.local.json` ni `CLAUDE.md` — son propios de cada proyecto.
 
-### 3. Actualizar starter/README.md
+### 4. Actualizar `<fw>/README.md`
 
-Comprueba si `starter/README.md` ya tiene cambios pendientes (el usuario lo modificó manualmente):
+Si `<fw>/README.md` ya tiene cambios pendientes (`git diff --name-only HEAD -- <fw>/README.md`), salta este paso.
+
+Si no:
+
+1. Toma la lista de skills del manifest.
+2. Extrae las filas de la tabla de skills de `<fw>/README.md`.
+3. Para cada skill: lee la primera línea descriptiva de su `SKILL.md` (la que sigue al encabezado `#`) y compárala con la tabla.
+   - Skill sin fila: añade una.
+   - Descripción distinta: actualiza la fila.
+4. Elimina las filas cuyo skill ya no esté en el manifest.
+5. Informa de las filas añadidas, eliminadas o modificadas, o "<fw>/README.md no requiere cambios."
+
+### 5. Commit y push al repo del framework
+
+El destino es `repo` del manifest. Compara con el origin del proyecto:
 
 ```bash
-git diff --name-only HEAD -- starter/README.md
+git remote get-url origin
 ```
 
-Si aparece en el diff → salta este paso.
-
-Si no aparece:
-
-1. Toma la lista de skills del template.
-2. Lee `starter/README.md` y extrae las filas de la tabla de skills.
-3. Para cada skill de la lista: lee la primera línea descriptiva de su `SKILL.md` (la que sigue al encabezado `#`). Compárala con la descripción en la tabla.
-   - Skill nuevo (no tiene fila): añade una fila.
-   - Skill con descripción distinta: actualiza la fila.
-4. Para cada fila en la tabla cuyo skill ya no esté en la lista: elimina la fila.
-5. Si hubo cambios: actualiza `starter/README.md` e informa al usuario qué filas se añadieron, eliminaron o modificaron.
-6. Si no hubo cambios: informa "starter/README.md no requiere cambios."
-
-### 4. Commit y push
+**5a. Origin == `repo`** (el proyecto es el propio repo del framework):
 
 ```bash
-git add .claude/ starter/
+git add .claude/skills/<skill1> ... .claude/agents/<agent1> ... <fw>/
 git commit -m "Sincroniza skills/assets — <fecha>"
 git push
 ```
 
-### 5. Actualizar starter/config/version
-
-Tras el push, obtén el hash del commit recién subido y actualiza el fichero de versión:
+**5b. Origin != `repo`** (proyecto derivado). No empujes la historia del proyecto; publica solo las rutas del framework sobre la historia del repo del framework mediante un worktree temporal:
 
 ```bash
-HASH=$(git rev-parse HEAD)
-echo $HASH > starter/config/version
-git add starter/config/version
-git commit -m "chore: actualiza versión del starter — $HASH"
+git remote get-url template-<fw> || git remote add template-<fw> <repo>
+git fetch template-<fw>
+git worktree add --detach <tmp> template-<fw>/main
+```
+
+Si el repo remoto está vacío (no existe `template-<fw>/main`), crea el worktree huérfano: `git worktree add --orphan -b sync-<fw> <tmp>`.
+
+En `<tmp>`: para cada ruta del manifest y `<fw>/`, borra la ruta destino y copia la del proyecto (así se propagan también los ficheros eliminados). Después:
+
+```bash
+git -C <tmp> add -A
+git -C <tmp> commit -m "Sincroniza skills/assets — <fecha>"
+git -C <tmp> push template-<fw> HEAD:main
+```
+
+Si el push es rechazado por no ser fast-forward, informa y detente; no fuerces. Al terminar (también si falla), elimina el worktree: `git worktree remove --force <tmp>`.
+
+En ambos casos no uses `git add .claude/` a secas.
+
+### 6. Actualizar `<fw>/config/version`
+
+Tras el push, escribe el hash del commit subido (`git rev-parse HEAD` en 5a, `git -C <tmp> rev-parse HEAD` en 5b) en `<fw>/config/version`, haz commit en el proyecto y haz push:
+
+```bash
+echo $HASH > <fw>/config/version
+git add <fw>/config/version
+git commit -m "chore: actualiza versión de <fw> — $HASH"
 git push
 ```
 
-### 6. Confirmar
+En 5b, repite el commit de `version` en el worktree antes de eliminarlo para que el remoto también lo tenga, y haz push allí; en el proyecto el `git push` solo aplica si su origin lo tiene configurado.
 
-Informa al usuario de:
-- Qué skills están en el template
+### 7. Confirmar
+
+Informa de:
+- Qué skills están en el template `<fw>`
 - Si se añadieron MCP servers o permisos nuevos al config
-- La URL del repo: `https://github.com/dgarciahz/claude-starter`
+- La URL del repo (`repo` del manifest)
 
 ## Notas
 
-- NUNCA copies `CLAUDE.md`, `.mcp.json`, ni `.claude/settings.local.json` al template — son propios de cada proyecto.
-- Si el usuario quiere actualizar solo un skill concreto, acepta el nombre como argumento e informa de qué se sincronizaría.
-- Tras el push, el template queda actualizado pero los proyectos ya creados desde él NO reciben los cambios automáticamente — eso es por diseño (usan `/sys--template-pull` para actualizar).
+- NUNCA copies `CLAUDE.md`, `.mcp.json` ni `.claude/settings.local.json` al template — son propios de cada proyecto.
+- El manifest es la única fuente de verdad del scope. NUNCA uses `git add .claude/` a secas — siempre añade las rutas del manifest una a una.
+- Tras el push, los proyectos ya creados desde el template NO reciben los cambios automáticamente — eso es por diseño (usan `/sys--template-pull <fw>`).

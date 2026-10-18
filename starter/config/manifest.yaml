@@ -1,0 +1,10 @@
+repo: https://github.com/dgarciahz/claude-starter
+skills:
+  - gh--pull
+  - gh--push
+  - per--history
+  - per--session-close
+  - per--add-task
+  - sys--template-pull
+  - sys--template-push
+agents: []

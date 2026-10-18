@@ -23,6 +23,19 @@ Lee el archivo de sesión más reciente en `$CLAUDE_PERSONAL_DIR/history/`. Para
 
 No copies tareas pendientes de sesiones anteriores sin pasar por este análisis. Si no hay sesión anterior, omite este paso.
 
+### 2b. Revisar tareas declaradas durante la sesión
+
+Si existe `$CLAUDE_PERSONAL_DIR/history/.session-tasks.md` (creado por `per--add-task`), léelo y evalúa cada entrada con las mismas categorías del paso 2:
+
+- **Completada** → inclúyela en "Tareas completadas"
+- **Resuelta de otra forma** → no la arrastres; menciónala en "Decisiones tomadas" si es relevante
+- **Todavía activa** → inclúyela en "Tareas pendientes", matizando el texto si el contexto cambió
+- **Descartada / ya no aplica** → no la incluyas
+
+Las entradas con fecha anterior a hoy son huérfanas de una sesión que no se cerró. Pásalas por el mismo análisis, pero verifica con más cuidado si siguen vigentes antes de arrastrarlas.
+
+Estas entradas son la base: en el paso 3 solo falta añadir lo que no estuviera declarado. Si el fichero no existe o está vacío, omite este paso.
+
 ### 3. Generar resumen de la sesión
 
 Genera un resumen estructurado de la sesión actual con estas secciones:
@@ -55,6 +68,10 @@ Comprueba cuántos archivos del día ya existen en `history/` para asignar el si
 ### 5. Escribir el archivo
 
 Guarda el resumen en `$CLAUDE_PERSONAL_DIR/history/session-YYYY-MM-DD-NNN.md`.
+
+### 5b. Vaciar el borrador de tareas
+
+Tras confirmar que el resumen se escribió, elimina `$CLAUDE_PERSONAL_DIR/history/.session-tasks.md` si existe. No lo borres antes: si la escritura falla, las tareas se perderían.
 
 ### 6. Mantener ventana de 15 días trabajados
 
