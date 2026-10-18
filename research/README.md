@@ -37,10 +37,13 @@ El framework está diseñado para evaluar propuestas que llegan de terceros — 
 Una vez instalado (ver [Install & Config](#install--config)), usa el framework así:
 
 ```
+/research--run mi-proyecto [fichero]
 "Analiza este proyecto: [descripción del proyecto]"
 "Investiga esta idea: [descripción]"
 "Quiero hacer research sobre: [descripción]"
 ```
+
+Las frases en lenguaje natural activan el skill `research--run` por su descripción; el comando lo invoca de forma explícita.
 
 La descripción puede ser breve (unas líneas) o un documento completo. Si tienes un fichero, puedes indicar la ruta y el orquestador lo leerá. El framework primero caracterizará la propuesta (fundamento técnico, diferenciales, casos de uso) y te mostrará un resumen del análisis antes de lanzar los módulos de research. Al terminar, recibirás un informe con la decisión y los próximos pasos, guardado en `research/data/projects/`.
 
@@ -56,7 +59,7 @@ Clona el repositorio o usa **"Use this template"** en GitHub para crear tu propi
 git clone https://github.com/local_dgarciahz/claude-research-skills.git
 ```
 
-Los resultados de research (`data/projects/`) son locales y gitignoreados. Los ficheros de referencia competitiva (`market/`) están versionados en el repo y se sincronizan con `/sys--template-pull research` / `/sys--template-push research`.
+Los resultados de research (`data/projects/`) son locales y gitignoreados. Los ficheros de referencia competitiva (`market/`) están versionados en el repo y se sincronizan con `/core--template-pull research` / `/core--template-push research`.
 
 ### Opción B — Integrar en proyecto existente (claude-starter)
 
@@ -82,7 +85,7 @@ Dile a Claude en ese proyecto:
 ```
 
 Claude ejecutará los pasos de inicialización automáticamente:
-- Añadir `@research/RESEARCH.md` al `CLAUDE.md` del proyecto (bloque `<!-- RESEARCH:START/END -->`)
+- Comprobar que el skill `research--run` está instalado y retirar el bloque `RESEARCH` antiguo del `CLAUDE.md`, si existe
 - Crear directorios de datos locales (`data/in/`, `data/projects/`, `wip/`, `state/`)
 - Añadir `research/data/`, `research/wip/` y `research/state/` al `.gitignore`
 - Registrar el hook `SessionStart` en `.claude/settings.json` para chequeo de versión al inicio de sesión
@@ -90,7 +93,7 @@ Claude ejecutará los pasos de inicialización automáticamente:
 
 ### 3. Reiniciar Claude Code
 
-Necesario para que el `@filepath` cargue en el contexto de sistema.
+Necesario para que Claude Code cargue el skill y el hook.
 
 ### 4. Añadir datos de referencia (opcional)
 
@@ -106,11 +109,11 @@ El directorio `research/data/` es completamente gitignoreado. INIT.md lo crea co
 
 ### 6. Actualizar el framework (cuando haya nuevas versiones)
 
-Ejecuta `/sys--template-pull research`. Actualiza solo lo que declara `research/config/manifest.yaml` y el directorio `research/`, sin tocar tus datos ni resultados.
+Ejecuta `/core--template-pull research`. Actualiza solo lo que declara `research/config/manifest.yaml` y el directorio `research/`, sin tocar tus datos ni resultados.
 
-Para proponer mejoras al framework: `/sys--template-push research`.
+Para proponer mejoras al framework: `/core--template-push research`. Empuja los skills `research--*` (según `prefixes` de `config/manifest.yaml`) y el directorio `research/`.
 
-Research usa el mismo mecanismo de sincronización que el resto de frameworks (`sys--template-*`, que vienen de starter). Es deliberado: un único mecanismo evita frameworks divergentes y reduce el coste de mantenimiento.
+Research usa el mismo mecanismo de sincronización que el resto de frameworks (`core--template-*`, que vienen de starter). Es deliberado: un único mecanismo evita frameworks divergentes y reduce el coste de mantenimiento.
 
 ### 7. Configurar NotebookLM (opcional)
 
@@ -148,7 +151,7 @@ Cada ejecución crea un cuaderno nuevo en NotebookLM con nombre `research_fw_{pr
 
 ```
 research/
-├── RESEARCH.md          ← orquestador cargado via @filepath en CLAUDE.md
+├── RESEARCH.md          ← procedimiento del orquestador; lo lee el skill research--run
 ├── INIT.md              ← instalador one-shot (ejecutar una vez por proyecto)
 ├── README.md            ← esta guía
 ├── agents/              ← un .md por agente (llamados via Agent tool)
@@ -156,7 +159,7 @@ research/
 │   └── version-check.sh ← hook SessionStart: avisa si hay versión más nueva
 ├── config/              ← configuración del framework
 │   ├── config.yaml      ← pipeline de agentes y settings
-│   ├── manifest.yaml    ← repo de origen y skills/agents que forman parte del framework
+│   ├── manifest.yaml    ← repo de origen y prefixes de los skills/agents del framework
 │   ├── io-schema.yaml   ← contrato de entrada/salida de todos los agentes
 │   └── version          ← hash del último push; los consumidores lo comparan al activar el framework
 ├── market/              ← ficheros .md de referencia competitiva (versionado en el repo)
@@ -172,7 +175,7 @@ research/
 
 ### `RESEARCH.md` — El orquestador
 
-Cargado en el contexto de sistema via `@research/RESEARCH.md` en `CLAUDE.md`. Contiene las instrucciones completas de orquestación: cuándo activar el framework, cómo recoger el input, cómo seleccionar módulos, cómo lanzar cada agente, la lógica de early exit y cómo presentar el resultado final.
+Lo lee el skill `/research--run` al activarse (no se carga en el contexto de cada sesión). Contiene las instrucciones completas de orquestación: cuándo activar el framework, cómo recoger el input, cómo seleccionar módulos, cómo lanzar cada agente, la lógica de early exit y cómo presentar el resultado final.
 
 No necesitas modificarlo salvo que quieras cambiar el comportamiento del orquestador.
 
@@ -184,7 +187,7 @@ Un único fichero con tres secciones diferenciadas:
 
 - **`workflow`**: pipeline de agentes (qué corre, en qué orden, condiciones de early exit, formato de output)
 - **`settings`**: rutas internas y límites operativos
-- **`manifest.yaml`** (fichero aparte): `repo` de origen, `skills` y `agents` del framework; lo leen `/sys--template-pull` y `/sys--template-push`
+- **`manifest.yaml`** (fichero aparte): `repo` de origen y `prefixes` (los skills `.claude/skills/<prefix>--*` y agents `.claude/agents/<prefix>--*` del framework); lo leen `/core--template-pull` y `/core--template-push`
 
 Para añadir un nuevo agente: añade una entrada en `workflow.research_agents` con el `id`, `file` y `order` correspondiente.
 
@@ -238,7 +241,7 @@ Define el esquema de entrada y salida que todos los agentes deben respetar. Es l
 
 ### `market/` — Datos de referencia competitiva
 
-Ficheros `.md` que describen proyectos existentes en el mercado. Están versionados en el repo y se sincronizan con `/sys--template-pull research` / `/sys--template-push research`. El agente `market-projects` los lee y contrasta con el proyecto analizado. Formato libre; cuanto más estructurado, mejor el análisis.
+Ficheros `.md` que describen proyectos existentes en el mercado. Están versionados en el repo y se sincronizan con `/core--template-pull research` / `/core--template-push research`. El agente `market-projects` los lee y contrasta con el proyecto analizado. Formato libre; cuanto más estructurado, mejor el análisis.
 
 ### `data/projects/` — Resultados acumulados
 
@@ -252,6 +255,12 @@ Directorios gitignored con responsabilidades distintas:
 - **`state/{project_name}.json`** — traza completa de la ejecución: todos los agentes con su estado real (`completed`, `skipped`, `error`, `pending`). Lo escribe y mantiene el orquestador, no los agentes. El orquestador lo lee al inicio de cada ejecución para mostrar el estado del run anterior y preguntar qué regenerar.
 
 ---
+
+## Skills
+
+| Skill | Descripción |
+|-------|-------------|
+| `/research--run` | Lanza el framework de research sobre un proyecto: análisis previo, módulos en paralelo y síntesis (sigue `research/RESEARCH.md`) |
 
 ## Agents
 

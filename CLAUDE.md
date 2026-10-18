@@ -18,10 +18,6 @@ Si el contexto incluye mensajes de version-check (starter framework o research f
 @C:\david\development\claude\claude-personalization\user.md
 <!-- PERSONALIZATION:END -->
 
-<!-- RESEARCH:START -->
-@research/RESEARCH.md
-<!-- RESEARCH:END -->
-
 <!-- ARCHITECT:START — no eliminar este bloque -->
 @architect/assets/learnings/learnings.md
 @architect/assets/learnings/_index.md

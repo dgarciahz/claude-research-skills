@@ -1,6 +1,6 @@
 # Research Framework — Inicialización
 
-Este fichero contiene las instrucciones para instalar el Research Framework en el proyecto actual. Es autocontenido: configura todo lo que research necesita sin depender de `sys--template-init` ni de ninguna otra herramienta del proyecto base.
+Este fichero contiene las instrucciones para instalar el Research Framework en el proyecto actual. Es autocontenido: configura todo lo que research necesita sin depender de `core--template-init` ni de ninguna otra herramienta del proyecto base.
 
 ## Cómo invocar
 
@@ -40,35 +40,32 @@ Comprueba que existe el directorio `research/` en la raíz del proyecto actual c
 - Si no existe → informa al usuario: "El directorio `research/` no está presente. Clona el template desde GitHub: `git clone https://github.com/dgarciahz/claude-research-skills.git`"
 - Si existe → continúa.
 
-### Paso 2 — Verificar si CLAUDE.md ya tiene el bloque RESEARCH
+### Paso 2 — Verificar que el skill está instalado
 
-Busca el bloque `<!-- RESEARCH:START -->` en el fichero `CLAUDE.md` de la raíz del proyecto.
+Comprueba que existe `.claude/skills/research--run/SKILL.md`.
 
-- Si ya existe → informa al usuario: "El bloque RESEARCH ya existe en CLAUDE.md — saltando Paso 3." Continúa desde el Paso 4.
-- Si no existe → continúa al Paso 3.
+- Si no existe → informa al usuario: "Falta el skill `research--run`. Ejecuta `/core--template-pull research` para instalarlo." y detente.
+- Si existe → continúa.
 
-### Paso 3 — Añadir @filepath al CLAUDE.md
+### Paso 3 — Retirar el bloque RESEARCH antiguo del CLAUDE.md
 
-Busca el fichero `CLAUDE.md` en la raíz del proyecto. Si no existe, créalo vacío.
+Versiones anteriores del framework cargaban `RESEARCH.md` con `@` en el `CLAUDE.md`. Ahora lo lee el skill `research--run` bajo demanda.
 
-Añade el siguiente bloque al **final** del fichero:
+Busca el bloque `<!-- RESEARCH:START -->` ... `<!-- RESEARCH:END -->` en el `CLAUDE.md` de la raíz del proyecto.
 
-```
-<!-- RESEARCH:START -->
-@research/RESEARCH.md
-<!-- RESEARCH:END -->
-```
+- Si existe → elimínalo (el bloque completo, incluida la línea en blanco que lo separa del siguiente) e informa al usuario.
+- Si no existe → continúa. No crees ni modifiques el `CLAUDE.md`.
 
 ### Paso 4 — Crear directorios de datos y temporales
 
-Estos directorios son locales y gitignoreados — no se incluyen en el repo ni se sincronizan con `/sys--template-pull research`. Debes crearlos explícitamente usando la herramienta Write para escribir un fichero `.gitkeep` vacío en cada ruta (esto crea el directorio automáticamente si no existe):
+Estos directorios son locales y gitignoreados — no se incluyen en el repo ni se sincronizan con `/core--template-pull research`. Debes crearlos explícitamente usando la herramienta Write para escribir un fichero `.gitkeep` vacío en cada ruta (esto crea el directorio automáticamente si no existe):
 
 - `research/data/in/.gitkeep` — documentos de propuesta a analizar
 - `research/data/projects/.gitkeep` — informes de research generados automáticamente
 - `research/wip/.gitkeep` — JSONs de resultados por agente (temporales de ejecución)
 - `research/state/.gitkeep` — traza completa de ejecución por proyecto
 
-`research/market/` no se crea aquí — viene versionado en el repo del framework (core) y se sincroniza con `/sys--template-pull research`.
+`research/market/` no se crea aquí — viene versionado en el repo del framework (core) y se sincroniza con `/core--template-pull research`.
 
 Si algún directorio ya existe, omítelo.
 
@@ -180,8 +177,8 @@ Muestra al usuario un resumen adaptado a lo que se ejecutó:
 ```
 Research Framework inicializado correctamente.
 
-CLAUDE.md — añadido:
-  @research/RESEARCH.md
+Skill research--run: [presente]
+CLAUDE.md — bloque RESEARCH antiguo: [eliminado | no existía]
 
 Directorios creados (gitignored, solo locales):
   research/data/in/       → documentos de propuesta a analizar
@@ -197,13 +194,14 @@ settings.local.json — permisos notebooklm: [añadidos | ya existían | saltado
 
 Próximos pasos:
   1. [Solo si notebooklm se configuró ahora] Ejecuta `nlm login` para autenticarte.
-  2. Reinicia Claude Code para que los @filepath carguen en el contexto.
+  2. Reinicia Claude Code para que cargue el skill y el hook.
   3. Añade ficheros .md de proyectos de referencia en research/market/
-  4. Pide a Claude: "analiza este proyecto: [descripción]"
+  4. Ejecuta `/research--run <project_name>` o pide a Claude: "analiza este proyecto: [descripción]"
 
 Comandos disponibles (tras reiniciar):
-  /sys--template-pull research  → actualiza el framework desde el repo de origen
-  /sys--template-push research  → sube mejoras del framework al repo de origen
+  /research--run <project_name>      → lanza el framework de research
+  /core--template-pull research      → actualiza el framework desde el repo de origen
+  /core--template-push research      → sube mejoras del framework al repo de origen
 ```
 
 ---
@@ -211,5 +209,5 @@ Comandos disponibles (tras reiniciar):
 ## Notas
 
 - Este fichero solo debe ejecutarse una vez por proyecto.
-- Para desinstalar: elimina el bloque `<!-- RESEARCH:START/END -->` del CLAUDE.md y el directorio `research/`.
+- Para desinstalar: elimina `.claude/skills/research--run/` y el directorio `research/`.
 - Para añadir nuevos agentes de research: crea un fichero `.md` en `research/agents/` y regístralo en `research/config/config.yaml` bajo `workflow.research_agents`.

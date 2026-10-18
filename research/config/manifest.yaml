@@ -1,3 +1,3 @@
 repo: https://github.com/dgarciahz/claude-research-skills
-skills: []
-agents: []
+prefixes:
+  - research

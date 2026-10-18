@@ -1,5 +1,8 @@
 # Configuración local de Claude Code y entorno de desarrollo (específicos del entorno local)
-.claude/
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/research--*
 starter/
 
 
