@@ -260,7 +260,7 @@ Directorios gitignored con responsabilidades distintas:
 
 | Skill | Descripción |
 |-------|-------------|
-| `/research--run` | Lanza el framework de research sobre un proyecto: análisis previo, módulos en paralelo y síntesis (sigue `research/RESEARCH.md`) |
+| `/research--run` | Lanza el framework de research multi-agente sobre un proyecto: análisis previo, módulos de research en paralelo y síntesis. |
 
 ## Agents
 
